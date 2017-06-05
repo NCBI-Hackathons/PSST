@@ -1,0 +1,15 @@
+ *.pyc
+*_snps
+*_pathogenic
+*_sra
+*_geo
+*.vcf
+polyenv/
+running_doc.txt
+top100*
+SRA_FILENAME
+*.foo
+GRCh38_latest_clinvar_pathogenic_only
+interesting_phenotypes
+*tables.sh
+tables.py
