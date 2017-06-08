@@ -8,8 +8,20 @@ Here is what this pipeline does: We are developing a software pipeline to identi
 
 ## Usage
 
-Find SNP IDs for diseases, and then run modules.
+### Step 1 -- Extracting phenotypes
 
-## Module 1
+#### This script extracts 100 disease phenotypes that have the most associated SNPs in ClinVar that are asserted to be pathogenic
+
+##### This truncates extensions and details and takes root terms
+
+###### It does not do any semantic clustering of like phenotypes
+
+### Step 2 -- Generating a summary table
+
+#### This script makes a table that summarizes the number of SNPs and pathogenic variants associated with the 100 disease phenotypes, as well as the number of SRA and GEO datasets available that are related to those phenotypes
+
+### Step 3 -- Specifying SNPs and Datasets for selected phenotypes 
+
+#### Module 1
 
 This software generates SNP sequences from the SNP IDs for a disease, and then you can make blastdb.  It fits into the general scheme of this pipeline <here>.  
