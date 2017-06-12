@@ -25,6 +25,3 @@ Here is what this pipeline does: We are developing a software *pipeline* to **id
 
 ### Step 3 -- Specifying SNPs and Datasets for selected phenotypes 
 
-#### Module 1
-
-This software generates SNP sequences from the SNP IDs for a disease, and then you can make blastdb.  It fits into the general scheme of this pipeline <here>.  
