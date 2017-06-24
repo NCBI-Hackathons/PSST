@@ -2,7 +2,6 @@
 from Bio import Entrez
 import sys
 import argparse
-import subprocess
 
 def get_major_allele(seq):
 	'''
