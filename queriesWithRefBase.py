@@ -2,32 +2,44 @@
 import sys
 import argparse
 
+# Global variables are depicted in all uppercase
+MATCH = '=' # Base to represent a match in the alignment
+GAP = '_' # Base to represent a gap in the alignment
+QUERY = 0 # The first base of a BTOP base-pair represents the variant in the query
+REF = 1 # The second base of a BTOP base-pair represents the variant in the reference
+
 def find_delimited_btop(btop):
 	'''
-	Constructs a BTOP string so that there is a space before every character that follows an int.
-	Example: 4CGAT_64_4 -> 4 CG AT _64_ 4
+	Constructs a BTOP string so that there is a space between each operation
+	Example: 4CGAT_10_4 -> 4 CG AT _10_ 4
 	Inputs
 	- (str) btop: the BTOP string
 	Outputs
 	- (str): The delimited BTOP string
 	'''
-	btop = ''.join( btop.split('^') ) # Removes ^ character from string
+	btop.replace("^","_") # We treat introns as gaps
 	delimited_btop = ""
-	previous_was_int = False # Flag that findicates whether the previous character analyzed in the BTOP string 
-				 # was a char
-	num_char = 0
+	num_base = 0
+	in_gap = False
+	prev_was_int = False
 	for i in range( len(btop) ):
 		current_char = btop[i]
-		if not current_char.isdigit():
-			if current_char.isalpha() and :
-				num_char += 1
-				if num_char % 2 == 1 and i != 0:
-					delimited_btop += " "
-			prev_was_int = False
-		else:
-			if not prev_was_int:
+		if current_char.isalpha() or current_char == '-':
+			num_base += 1
+			if num_base % 2 == 1:
 				delimited_btop += " "
-			prev_was_int = True
+			prev_was_int = False
+		elif current_char == "_":
+			if in_gap:
+				in_gap = False
+			else:
+				delimited_btop += " "
+				in_gap = True
+			prev_was_int = False	
+		elif current_char.isdigit():
+			if not prev_was_int and not in_gap:
+				delimited_btop += " "
+			prev_was_int = True	
 		delimited_btop += current_char
 	return delimited_btop
 
@@ -43,14 +55,24 @@ def delimited_btop_to_alignment(delimited_btop):
 	btop_list = delimited_btop.split()
 	ref = ""
 	query = ""
-	for item in btop_list:
-		if item.isdigit():
-			num_matches = int(item)
-			ref = ref + ("X" * num_matches)
-			query = query + ("X" * num_matches)
+	gap = False
+	for btop in btop_list:
+		if '_' in btop:
+			gap = True
+			btop = ''.join(btop.split('_'))
 		else:
-			query = query + item[0]
-			ref = ref + item[1]	
+			gap = False	
+		if btop.isdigit():
+			num_matches = int(btop)
+			if gap:
+				base = GAP
+			else:
+				base = MATCH
+			ref = ref + (base * num_matches)
+			query = query + (base * num_matches)
+		else:
+			query = query + btop[QUERY]
+			ref = ref + btop[REF]	
 	return ref,query
 
 def find_left_alignment_flank(left,ref):
@@ -90,24 +112,33 @@ def query_contains_ref_base(btop,left,right):
 	stop = len(ref) - alignment_right
 	for i in range(start,stop):
 		query_base = query[i]
-		if query_base != X:
+		if query_base != MATCH:
 			return False
 	return True 
 
 def unit_tests():
 	# Test data
-	ref_seq = "AAAAGAAAA"
-	query_seq = "AAAACAAAA"
-	btop = "4CGAT4"
-	pos = 3
+	orig_ref = "AAAAGTTTTTTTTTTAAAA"
+	orig_query = "AAAACCAAAA"
+	btop = "4C-CG_10_4"
+	left = 16
+	right = 17
 	# Start testing each module individually
 	delimited_btop = find_delimited_btop(btop)
-	assert( delimited_btop == " 4 CG 4" )
+	assert( delimited_btop == " 4 C- CG _10_ 4" )
+
 	ref, query = delimited_btop_to_alignment(delimited_btop)
-	assert( (ref == "XXXXGXXXX") and (query == "XXXXCXXXX") )
-	alignment_pos = find_left_alignment_flank(pos,ref)
-	assert( alignment_pos == pos )
-	assert(query_contains_ref_base(btop,pos))		
+	assert( ( query == "====CC__________====") and (ref == "====-G__________====") )
+
+	alignment_left = find_left_alignment_flank(left,ref)
+	alignment_right = find_left_alignment_flank(right,ref[::-1])
+	assert( alignment_left == left + 1 )
+	assert( alignment_right == right + 1 )
+
+	assert(query_contains_ref_base(btop,left,right))		
+
+	assert(not query_contains_ref_base(btop,5,6))		
+
 	print("All unit tests passed!")
 
 if __name__ == '__main__':
