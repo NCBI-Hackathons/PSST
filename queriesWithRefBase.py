@@ -94,16 +94,27 @@ def find_left_alignment_flank(left,ref):
 		alignment_left += 1
 	return alignment_left + 1
 
-def query_contains_ref_base(btop,left,right):
+def query_contains_ref_base(alignment,flanks):
 	'''
 	Determines whether the query sequence as encoded by the BTOP string contains the ref base at pos.
 	Inputs
-	- (str) btop: the BTOP string
-	- (int) left: the length of the left flank
-	- (int) right: the length of the right flank
+	- alignments: contains information regarding the magic-blast alignment for the query
+	- flanks: lengths of the SNP flanks
 	Outputs
 	- (bool): True if query contains ref bases surrounded by the flanks, False otherwise 
 	'''
+	btop = alignment['btop']
+	ref_start = alignment['ref_start']
+	ref_stop = alignment['ref_stop']
+	left = flanks[0]
+	right = flanks[1]	
+
+	if ref_start < left or ref_stop > right: # Determine whether the variant even includes the variant
+		return False
+	else:
+		left = left - ref_start
+		right = 
+
 	delimited_btop = find_delimited_btop(btop)
 	ref, query = delimited_btop_to_alignment(delimited_btop)
 	alignment_left = find_left_alignment_flank(left,ref)

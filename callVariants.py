@@ -104,9 +104,10 @@ def get_sra_snps(btops,flanks)
 		alignments = btops[sra_acc]
 		for alignment in alignments:
 			snp_acc = alignments['snp_acc']
+			snp_flanks = flanks[snp_acc]
 			if snp_acc not in snp_freq:
 				snp_freq[snp_acc] = { 'true': 0, 'false': 0 }
-			snp_called = query_contains_ref_base(alignment)
+			snp_called = query_contains_ref_base(alignment,snp_flanks)
 			if snp_called:
 				snp_freq[snp_acc]['true'] += 1	
 			else:
