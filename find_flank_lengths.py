@@ -2,6 +2,26 @@
 import sys
 import argparse
 
+def get_major_allele(seq):
+        '''
+        Given a known variant in the form 'SEQ=W[X/Y]Z' where W,X,Y,Z are nucleotide sequences, returns the major\
+        allele, i.e. WXZ
+        Input
+        - seq: the variant sequence
+        Output
+        - the major allele as a string
+        '''
+        left_bracket_index = seq.find('[')
+        right_bracket_index = seq.find(']')     
+        # extract the two variants
+        variants = seq[ left_bracket_index + 1 : right_bracket_index ]
+        var_tokens = variants.split('/')
+        major_var = var_tokens[0]
+        minor_var = var_tokens[1]
+        # Construct the major allele
+        major_allele = seq[4:left_bracket_index] + major_var + seq[right_bracket_index + 1:]
+        return major_allele
+
 def find_flanking_lengths(sequences):
 	'''
 	Finds the length of the flanking sequences left and right of a variant.
@@ -18,7 +38,8 @@ def find_flanking_lengths(sequences):
 		right_bracket_index = sequence.find(']')
 		left_flank_length = left_bracket_index
 		right_flank_length = len(sequence[right_bracket_index+1:])
-		flanking_lengths[seq_name] = (left_flank_length,right_flank_length)
+		length = len( get_major_allele(sequence) )
+		flanking_lengths[seq_name] = (left_flank_length,right_flank_length,length)
 	return flanking_lengths
 
 def unit_test():
@@ -69,4 +90,5 @@ if __name__ == '__main__':
 	for seq_name in flanking_lengths:
 		left_flank_length = flanking_lengths[seq_name][0]
 		right_flank_length = flanking_lengths[seq_name][1]
-		print( "%s %d %d" % (seq_name, left_flank_length, right_flank_length) )
+		length = flanking_lengths[seq_name][2]
+		print( "%s %d %d %d" % (seq_name, left_flank_length, right_flank_length, length) )
