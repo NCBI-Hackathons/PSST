@@ -22,16 +22,16 @@ def get_major_allele(seq):
         major_allele = seq[4:left_bracket_index] + major_var + seq[right_bracket_index + 1:]
         return major_allele
 
-def find_flanking_lengths(sequences):
+def find_flank_info(sequences):
 	'''
 	Finds the length of the flanking sequences left and right of a variant.
 	Assumes there is only one variant in the sequence.
 	Input
 	- sequences: dictionary of sequences
 	Output
-	- flanking_lengths: dictionary of flanking lengths for each sequence
+	- flanking_info: dictionary of flanking lengths for each sequence
 	'''
-	flanking_lengths = {}
+	flanking_info = {}
 	for seq_name in sequences:
 		sequence = sequences[seq_name]
 		left_bracket_index = sequence.find('[')
@@ -39,15 +39,15 @@ def find_flanking_lengths(sequences):
 		left_flank_length = left_bracket_index
 		right_flank_length = len(sequence[right_bracket_index+1:])
 		length = len( get_major_allele(sequence) )
-		flanking_lengths[seq_name] = (left_flank_length,right_flank_length,length)
-	return flanking_lengths
+		flanking_info[seq_name] = (left_flank_length,right_flank_length,length)
+	return flanking_info
 
 def unit_test():
 	sequence = "AAAA[G/T]AAAA"
 	seq_name = "test"
 	sequences = { seq_name : sequence }
-	flanking_lengths = find_flanking_lengths(sequences)
-	flanks = flanking_lengths[seq_name]
+	flanking_info = find_flank_info(sequences)
+	flanks = flanking_info[seq_name]
 	left_flank = flanks[0]
 	right_flank = flanks[1]
 	assert(left_flank == 4)
@@ -85,10 +85,10 @@ if __name__ == '__main__':
 
 	input_stream.close()
 
-	flanking_lengths = find_flanking_lengths(sequences)
+	flanking_info = find_flank_info(sequences)
 
-	for seq_name in flanking_lengths:
-		left_flank_length = flanking_lengths[seq_name][0]
-		right_flank_length = flanking_lengths[seq_name][1]
-		length = flanking_lengths[seq_name][2]
+	for seq_name in flanking_info:
+		left_flank_length = flanking_info[seq_name][0]
+		right_flank_length = flanking_info[seq_name][1]
+		length = flanking_info[seq_name][2]
 		print( "%s %d %d %d" % (seq_name, left_flank_length, right_flank_length, length) )
