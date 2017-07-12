@@ -81,7 +81,7 @@ def call_variants(var_freq):
 	'''
 	variants = []
 	for var_acc in var_freq:
-		frequencies = var_freq
+		frequencies = var_freq[var_acc]
 		true = frequencies['true']
 		false = frequencies['false']
 		percentage = true/(true+false)
@@ -100,14 +100,15 @@ def get_sra_variants(sra_alignments,flanks):
 		    of SNPs which exist in the SRA dataset
 	'''
 	variants = {}
-	for var_acc in sra_alignments:
+	for sra_acc in sra_alignments:
+		alignments = sra_alignments[sra_acc]
 		var_freq = {}
-		alignments = sra_alignments[var_acc]
 		for alignment in alignments:
 			var_acc = alignment['var_acc']
 			var_flanks = flanks[var_acc]
 			if var_acc not in var_freq:
-				var_freq[var_acc] = {'true':0, 'false':0}
+				var_freq[var_acc] = {'true':0,'false':0}
+			# Determine whether the variant exists in the particular SRA dataset
 			var_called = query_contains_ref_bases(alignment,var_flanks)
 			if var_called:
 				var_freq[var_acc]['true'] += 1	
@@ -163,3 +164,4 @@ if __name__ == "__main__":
 	sra_alignments = get_sra_alignments(paths)
 	flanks = get_flanks(flanks_path)
 	variants = get_sra_variants(sra_alignments,flanks)
+	print(variants)
