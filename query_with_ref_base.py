@@ -112,7 +112,7 @@ def translate_var_boundary(left,ref):
 		alignment_left += 1
 	return alignment_left + 1
 
-def query_contains_ref_base(alignment,flank_info):
+def query_contains_ref_bases(alignment,flank_info):
 	'''
 	Determines whether the query sequence as encoded by the BTOP string contains the ref base at pos.
 	Inputs
@@ -176,11 +176,11 @@ def unit_tests():
 	assert(alignment_left == left + 1)
 	assert(alignment_right == right + 1)
 
-	assert( query_contains_ref_base(alignment,flank_info) )
+	assert( query_contains_ref_bases(alignment,flank_info) )
 
 	alignment = {'btop':btop, 'ref_start':0, 'ref_stop':len(orig_ref)}
 	flank_info = {'left':5, 'right':6, 'length':len(orig_ref)}
-	assert( not query_contains_ref_base(alignment,flank_info) )
+	assert( not query_contains_ref_bases(alignment,flank_info) )
 
 	print("All unit tests passed!")
 
@@ -233,7 +233,7 @@ if __name__ == '__main__':
 		if len(line) > 0 and line[0] != '#':
 			tokens = line.split()
 			btop = tokens[btop_k]
-			if query_contains_ref_base(btop,args.left,args.right):
+			if query_contains_ref_bases(btop,args.left,args.right):
 				query = tokens[query_k]
 				queries.append(query)
 	input_stream.close()
