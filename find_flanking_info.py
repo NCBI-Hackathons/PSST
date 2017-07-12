@@ -4,7 +4,7 @@ import argparse
 
 def get_major_allele(seq):
         '''
-        Given a known variant in the form 'SEQ=W[X/Y]Z' where W,X,Y,Z are nucleotide sequences, returns the major\
+        Given a variant sequence in the form 'W[X/Y]Z' where W,X,Y,Z are nucleotide sequences, returns the major\
         allele, i.e. WXZ
         Input
         - seq: the variant sequence
@@ -19,13 +19,13 @@ def get_major_allele(seq):
         major_var = var_tokens[0]
         minor_var = var_tokens[1]
         # Construct the major allele
-        major_allele = seq[4:left_bracket_index] + major_var + seq[right_bracket_index + 1:]
+        major_allele = seq[:left_bracket_index] + major_var + seq[right_bracket_index + 1:]
         return major_allele
 
 def find_flank_info(sequences):
 	'''
 	Finds the length of the flanking sequences left and right of a variant.
-	Assumes there is only one variant in the sequence.
+	Also returns the length of the major allele
 	Input
 	- sequences: dictionary of sequences
 	Output
@@ -38,20 +38,29 @@ def find_flank_info(sequences):
 		right_bracket_index = sequence.find(']')
 		left_flank_length = left_bracket_index
 		right_flank_length = len(sequence[right_bracket_index+1:])
-		length = len( get_major_allele(sequence) )
+		major_allele = get_major_allele(sequence)
+		length = len(major_allele)
 		flanking_info[seq_name] = (left_flank_length,right_flank_length,length)
 	return flanking_info
 
 def unit_test():
-	sequence = "AAAA[G/T]AAAA"
+	# Set up test
 	seq_name = "test"
+	sequence = "AAAA[GA/T]AAAAA"
+	major_allele = "AAAAGAAAAAA"
+	real_length = len(major_allele)
+	real_left = 4
+	right_right = 5
+
 	sequences = { seq_name : sequence }
 	flanking_info = find_flank_info(sequences)
 	flanks = flanking_info[seq_name]
 	left_flank = flanks[0]
 	right_flank = flanks[1]
+	length = flanks[2]
 	assert(left_flank == 4)
-	assert(right_flank == 4) 
+	assert(right_flank == 5) 
+	assert(length == 11)
 	print("Unit tests passed!")
 
 if __name__ == '__main__':
