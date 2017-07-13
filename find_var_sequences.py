@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/bin/bash 
 ##################
 #
 # How to run this
@@ -19,12 +18,27 @@
 
 ## Extract sequences from SNP
 
+if [ "$#" -ne 3 ]; then
+	echo "$0 [query file] [flank file] [output file]"
+	exit 0
+fi
+
 QUERY=$1
-OUTPUT=$2
+FLANK=$2
+OUTPUT=$3
 
-echo ">"$QUERY"_SEQ" >> $OUTPUT
+echo "" > ${OUTPUT}
+echo "" > ${FLANK}
 
-esearch -query ${QUERY} -db snp | esummary | xtract -pattern DocumentSummary -element DOCSUM | egrep -o 'SEQ[^|]+' | sort -u | awk -F"SEQ=" '{print $2}' | sed 's/\[//' | sed 's/\/\w\]//' | sed 's/\///g' | sed 's/\]//g' | sed 's/\-//g'
+for ACC in $( cat ${QUERY} ); do
+	echo "Retrieving SNP ${ACC}..."
+	printf "${ACC}=" >> ${OUTPUT}
+	esearch -query ${ACC} -db snp | esummary | xtract -pattern DocumentSummary -element DOCSUM | egrep -o 'SEQ[^|]+' | sort -u | awk -F"SEQ=" '{print $2}' >> ${OUTPUT} #| sed 's/\[//' | sed 's/\/\w\]//' | sed 's/\///g' | sed 's/\]//g' | sed 's/\-//g'
+done
+
+for LINE in $(cat ${OUTPUT}); do
+	printf ${LINE} | find_flanking_info.py >> ${FLANK}
+done
 
 #$OUTPUT | findFlankLengths.py >> flanking_lengths.txt
 
