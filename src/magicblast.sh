@@ -2,11 +2,11 @@
 # Copyright: NCBI 2017
 # Author: Sean La
 
-if [ "$#" -ne 4 ]; then
+if [ "$#" -ne 3 ]; then
 	echo "Description: given a file containing SRA accessions and a BLAST database, this script runs Magic-BLAST" 
 	echo "on each SRA accessions."
 	BASENAME=`basename "$0"`
-	echo "Usage: ${BASENAME} [SRA accessions file] [BLASTDB dir path] [BLAST database name] [output directory]"
+	echo "Usage: ${BASENAME} [SRA accessions file] [BLAST database name] [output directory]"
 	exit 0
 fi
 
@@ -15,14 +15,11 @@ MAX_PROCS=10
 
 # Retrieve the command line arguments
 SRA=$1
-BLASTDB=$2
-DB_NAME=$3
-OUTPUT_DIR=$4
-MAPPER_NO_OVERLAPPED_HSP_MERGED=1
+DB_NAME=$2
+OUTPUT_DIR=$3
 
-export BLASTDB
 # This prevents ambiguous splicing from occuring in Magic-BLAST
-export MAPPER_NO_OVERLAPPED_HSP_MERGED
+export MAPPER_NO_OVERLAPPED_HSP_MERGED=1
 
 for ACC in $(cat ${SRA}); do
 	OUTPUT_FILE=${OUTPUT_DIR}/${ACC}.mbo
