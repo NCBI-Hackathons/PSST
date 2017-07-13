@@ -60,15 +60,27 @@ if __name__ == '__main__':
 	"""
 	Perform unit tests for this script.
 	""")
+	parser.add_argument('-i','--input',metavar='INPUT',help=
+	"""
+	Path to the input file. If not set, then takes input through STDIN.
+	""")
+	parser.add_argument('-o','--output',metavar='OUTPUT',help=
+	"""
+	Path to the output file. If not set, outputs through STDOUT.
+	""")
 	args = parser.parse_args()
 
 	if args.test:
 		unit_test()
 		sys.exit(0)
 	
-	sequences = {} 
-	input_stream = sys.stdin
+	if args.input:
+		input_stream = open(args.input,'r')
+	else:
+		input_stream = sys.stdin
 	
+	sequences = {} 
+
 	for line in input_stream:
 		tokens = line.split("=")
 		name = tokens[0]
@@ -79,8 +91,17 @@ if __name__ == '__main__':
 
 	var_info = find_var_info(sequences)
 
+	info_lines = []
 	for seq_name in var_info:
 		start = var_info[seq_name][0]
 		stop = var_info[seq_name][1]
 		length = var_info[seq_name][2]
-		print( "%s %d %d %d" % (seq_name, start, stop, length) )
+		info_lines.append( "%s %d %d %d" % (seq_name, start, stop, length) )
+
+	if args.output:
+		with open(args.output,'w') as output_stream:
+			for line in info_lines:
+				output_stream.write( "%s\n" % (line) )
+	else:
+		for line in info_lines:
+			print(line) 
