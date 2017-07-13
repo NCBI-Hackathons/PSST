@@ -14,4 +14,4 @@ PHENOTYPE=$1
 
 # Find variant IDs
 
-esearch -query ${PHENOTYPE} -ovarian_cancer -db pubmed | elink -target snp | esummary | xtract -pattern DocumentSummary -element SNP_ID
+esearch -query ${PHENOTYPE} -db pubmed | elink -target snp | esummary | xtract -pattern DocumentSummary -element SNP_ID
