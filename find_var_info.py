@@ -17,31 +17,33 @@ def get_major_allele(seq):
         variants = seq[ left_bracket_index + 1 : right_bracket_index ]
         var_tokens = variants.split('/')
         major_var = var_tokens[0]
-        minor_var = var_tokens[1]
         # Construct the major allele
         major_allele = seq[:left_bracket_index] + major_var + seq[right_bracket_index + 1:]
         return major_allele
 
-def find_flank_info(sequences):
+def find_var_info(sequences):
 	'''
 	Finds the length of the flanking sequences left and right of a variant.
 	Also returns the length of the major allele
 	Input
 	- sequences: dictionary of sequences
 	Output
-	- flanking_info: dictionary of flanking lengths for each sequence
+	- var_info: dictionary of flanking lengths for each sequence
 	'''
-	flanking_info = {}
+	var_info = {}
 	for seq_name in sequences:
 		sequence = sequences[seq_name]
+		major_allele = get_major_allele(sequence)
+
 		left_bracket_index = sequence.find('[')
 		right_bracket_index = sequence.find(']')
-		left_flank_length = left_bracket_index
+		start = left_bracket_index
+
 		right_flank_length = len(sequence[right_bracket_index+1:])
-		major_allele = get_major_allele(sequence)
 		length = len(major_allele)
-		flanking_info[seq_name] = (left_flank_length,right_flank_length,length)
-	return flanking_info
+		stop = length - right_flank_length
+		var_info[seq_name] = (start,stop,length)
+	return var_info
 
 def unit_test():
 	# Set up test
@@ -53,23 +55,22 @@ def unit_test():
 	right_right = 5
 
 	sequences = { seq_name : sequence }
-	flanking_info = find_flank_info(sequences)
-	flanks = flanking_info[seq_name]
-	left_flank = flanks[0]
-	right_flank = flanks[1]
+	var_info = find_var_info(sequences)
+	flanks = var_info[seq_name]
+	start = flanks[0]
+	stop = flanks[1]
 	length = flanks[2]
-	assert(left_flank == 4)
-	assert(right_flank == 5) 
+	assert(start == 4)
+	assert(stop == 5) 
 	assert(length == 11)
 	print("Unit tests passed!")
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(add_help=False,description=
 	'''
-	Author: Sean La. Given a list of sequences through STDIN in the form "seq_name=W[X/Y]Z" where W,X,Y, and Z\
-	are nucleotide subsequences, returns the length of flanks W and Z through STDOUT in the form "seq_name left\
-	right", where left and right are the lengths of the flanking sequences. Assumes each sequence has only\
-	one variant.
+	Author: Sean La. Given a list of sequences through STDIN in the form "SEQ_NAME=W[X/Y]Z" where W,X,Y, and Z\
+	are nucleotide subsequences, prints a line in the form "SEQ_NAME START STOP LENGTH" where START and STOP\
+        are the start and stop indices of the variant X and LENGTH is the length of the allele containing X. 
 	''')
 	parser.add_argument('-h','--help',action='help',default=argparse.SUPPRESS,
 				help='Show this help message and exit.')
@@ -94,10 +95,10 @@ if __name__ == '__main__':
 
 	input_stream.close()
 
-	flanking_info = find_flank_info(sequences)
+	var_info = find_var_info(sequences)
 
-	for seq_name in flanking_info:
-		left_flank_length = flanking_info[seq_name][0]
-		right_flank_length = flanking_info[seq_name][1]
-		length = flanking_info[seq_name][2]
-		print( "%s %d %d %d" % (seq_name, left_flank_length, right_flank_length, length) )
+	for seq_name in var_info:
+		start = var_info[seq_name][0]
+		stop = var_info[seq_name][1]
+		length = var_info[seq_name][2]
+		print( "%s %d %d %d" % (seq_name, start, stop, length) )
