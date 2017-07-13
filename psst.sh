@@ -3,7 +3,7 @@
 # Authors: Sean La
 
 if [ "$#" -ne 2 ]; then
-	echo "Description: given a disease/phenotype, this script retrieves all related variant and SRA accession"
+	echo "Description: Given a disease/phenotype, this script retrieves all related variant and SRA accession"
 	echo "             numbers and determines the set of variants that occur in each SRA dataset."
 	BASENAME=`basename "$0"`
 	echo "Usage: ${BASENAME} [phenotype] [working directory]"
