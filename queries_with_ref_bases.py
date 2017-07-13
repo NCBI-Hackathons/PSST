@@ -86,31 +86,31 @@ def read_flank_info(path):
 			tokens = line.split()
 			# The first item is the ID of the SNP
 			# The rest are the flank lengths and length of the major allele sequence
-			flank_info[tokens[0]] = {'left':tokens[1],'right':tokens[2],'length':tokens[3]}
+			flank_info[tokens[0]] = {'start':tokens[1],'stop':tokens[2],'length':tokens[3]}
 	return flank_info
 			
 
-def translate_var_boundary(left,ref):
+def translate_var_boundary(start,ref):
 	'''
-	Translates the left boundary of the variant of interest in the reference sequence into the left boundary
+	Translates the start boundary of the variant of interest in the reference sequence into the start boundary
 	of the variant in the reference alignment
 	e.g.
-	Given ref = ATCG, left = 1 and ref_alignment = A-TCG, this script outputs alignment_left = 2
+	Given ref = ATCG, start = 1 and ref_alignment = A-TCG, this script outputs alignment_start = 2
 	Inputs
-	- (int) left: the length of the left flank in the alignment
+	- (int) start: the length of the start flank in the alignment
 	- (str) ref: the reference alignment
 	Outputs
-	- (int) alignment_left: the length of the right most boundary of the left flank in the alignment
+	- (int) alignment_start: the length of the stop most boundary of the start flank in the alignment
 	'''
 	# find the position of the ref base in the reference alignment
-	alignment_left = 0 # This will be the position of the ref base in the reference alignment
-	seq_left = 0 # Keeps track of the current position in the reference sequence 
-	while seq_left < left - 1 and alignment_left - 1 < len(ref):
-		current_base = ref[alignment_left]
+	alignment_start = 0 # This will be the position of the ref base in the reference alignment
+	seq_start = 0 # Keeps track of the current position in the reference sequence 
+	while seq_start < start - 1 and alignment_start - 1 < len(ref):
+		current_base = ref[alignment_start]
 		if current_base != "-":
-			seq_left += 1
-		alignment_left += 1
-	return alignment_left + 1
+			seq_start += 1
+		alignment_start += 1
+	return alignment_start + 1
 
 def query_contains_ref_bases(alignment,flank_info):
 	'''
@@ -125,27 +125,27 @@ def query_contains_ref_bases(alignment,flank_info):
 	btop = alignment['btop']
 	ref_start = alignment['ref_start']
 	ref_stop = alignment['ref_stop']
-	left = flank_info['left']
-	right = flank_info['right']	
+	start = flank_info['start']
+	stop = flank_info['stop']	
 	length = flank_info['length']
 	# Determines whether the aligned subsequence of the reference even includes the variant
-	if ref_start > left or ref_stop < right: 
+	if ref_start > start or ref_stop < stop: 
 		return False
 	else:
 		# Adjust the variant boundary indices to be compatible with the local alignment given by the BTOP
 		# string
-		left = left - ref_start
-		right = right - ref_start
+		start = start - ref_start
+		stop = stop - ref_start
 	# Convert the BTOP string into an alignment
 	delimited_btop = find_delimited_btop(btop)
 	# Get the reference sequence alignment
 	ref = delimited_btop_to_alignment(delimited_btop)
 	# Translate the variant boundaries in the sequence into the boundaries for the alignment 
-	alignment_left = translate_var_boundary(left,ref)
-	alignment_right = translate_var_boundary(right,ref)
+	alignment_start = translate_var_boundary(start,ref)
+	alignment_stop = translate_var_boundary(stop,ref)
 	# Start and stop positions for the interval containing the variant in the alignment
-	start = alignment_left - 1
-	stop = len(ref) - alignment_right
+	start = alignment_start - 1
+	stop = len(ref) - alignment_stop
 	# If any base in the interval containing the variant is not a match, then the query does not contain the
 	# variant
 	for i in range(start,stop):
@@ -159,10 +159,10 @@ def unit_tests():
 	orig_ref = "AAAAGTTTTTTTTTTAAAA"
 	orig_query = "AAAACCAAAA"
 	btop = "4C-CG_10_4"
-	left = 16
-	right = 17
+	start = 16
+	stop = 17
 	alignment = {'btop':btop,'ref_start':0,'ref_stop':len(orig_ref)}
-	flank_info = {'left':left,'right':right,'length':len(orig_ref)}
+	flank_info = {'start':start,'stop':stop,'length':len(orig_ref)}
 
 	# Start unit tests
 	delimited_btop = find_delimited_btop(btop)
@@ -171,77 +171,34 @@ def unit_tests():
 	ref = delimited_btop_to_alignment(delimited_btop)
 	assert(ref == "====-G__________====")
 
-	alignment_left = translate_var_boundary(left,ref)
-	alignment_right = translate_var_boundary(right,ref)
-	assert(alignment_left == left + 1)
-	assert(alignment_right == right + 1)
+	alignment_start = translate_var_boundary(start,ref)
+	alignment_stop = translate_var_boundary(stop,ref)
+	assert(alignment_start == start + 1)
+	assert(alignment_stop == stop + 1)
 
 	assert( query_contains_ref_bases(alignment,flank_info) )
 
 	alignment = {'btop':btop, 'ref_start':0, 'ref_stop':len(orig_ref)}
-	flank_info = {'left':5, 'right':6, 'length':len(orig_ref)}
+	flank_info = {'start':5, 'stop':6, 'length':len(orig_ref)}
 	assert( not query_contains_ref_bases(alignment,flank_info) )
 
 	print("All unit tests passed!")
 
 if __name__ == '__main__':
-	# Columns in Magic-BLAST tabulated output for the query name and BTOP string
-	query_k = 0
-	btop_k = 16
 	# Set up the argument parser
 	parser = argparse.ArgumentParser(add_help=False,description=
 	'''
-	Author: Sean La. Given Magic-BLAST tabulated output provided either through STDIN or as a file,\
-	returns a list of queries that contain the same base as the reference at a specified location in the \
-	reference. Indexing of sequences is 0-based. 
-	''',
-	epilog="Example: magic-blast.tab | queriesWithRefBase.py 21 >> queries_with_variant.txt")
+	Author: Sean La. Given Magic-BLAST tabulated output information, this script determines which query\
+        sequences contain the same bases as the reference sequences.
+	''')
 	parser.add_argument('-h','--help',action='help',default=argparse.SUPPRESS,
                     help='Show this help message and exit.')
-	parser.add_argument('-i','--input_file',metavar='INPUT_FILE',type=str,help=
-		"""
-		Path to file containing Magic-BLAST tabulated output. If not set, will read through STDIN.	
-		""")
-	parser.add_argument('-f','--flank_info',metavar='FLANK_INFO',type=str,help=
-		"""
-		Path to the file containing information regarding the lengths of the variant flanking sequences
-		""")
-	parser.add_argument('-o','--output_path',metavar='OUTPUT_PATH',type=str,help=
-		"""
-		Output path for list of queries that contain the ref base. If not set, will output query names in 
-		STDOUT.
-		""")
 	parser.add_argument('-t','--test',action="store_true",help=
 		"""
 		Perform unit tests for this script.
 		""")
-	parser.add_argument('left',type=int,help='Length of left flanking sequeuence in reference sequence.')
-	parser.add_argument('right',type=int,help='Length of right flanking sequence in reference sequence.')
 	args = parser.parse_args()
 	# Perform unit tests and exit if specified
 	if args.test:
 		unit_tests()
 		sys.exit(0)
-	# If the user provided an input file, read from it. Otherwise, read from stdin
-	if args.input_file:
-		input_stream = open(args.input_file,'r')
-	else:
-		input_stream = sys.stdin
-	# Find those queries that contain the specified reference base
-	queries = []
-	for line in input_stream:
-		if len(line) > 0 and line[0] != '#':
-			tokens = line.split()
-			btop = tokens[btop_k]
-			if query_contains_ref_bases(btop,args.left,args.right):
-				query = tokens[query_k]
-				queries.append(query)
-	input_stream.close()
-	# If the user provided an output file path, write the queries there. Otherwise, just print to stdout.
-	if args.output_path:
-		with open(args.output_path,'w') as output_stream:
-			for query in queries:
-				output_stream.write( "%s\n" % (query) )
-	else:
-		for query in queries:
-			print(query)		
