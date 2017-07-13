@@ -5,7 +5,7 @@ import getopt
 import sys
 import os
 # Project-specific packages
-from query_with_ref_base import query_contains_ref_bases
+from queries_with_ref_bases import query_contains_ref_bases
 
 def get_mbo_paths(directory):
 	'''
@@ -18,7 +18,8 @@ def get_mbo_paths(directory):
 	paths = {}
 	for file in os.listdir(directory):
 		if file.endswith(".mbo"):
-			accession = os.path.basename(file)	
+			# We only want the accession number, not the extension as well
+			accession = os.path.basename(file).split('.')[0]
 			path = os.path.join(directory,file)
 			paths[accession] = path
 	return paths
@@ -34,40 +35,49 @@ def get_sra_alignments(paths):
 	'''
 	sra_alignments = {}
 	for accession in paths:
-		path = pair[accession]
+		path = paths[accession]
 		alignments = []	
 		with open(path,'r') as mbo:
 			for line in mbo:
 				tokens = line.split()
-				var_acc = tokens[1]
-				ref_start = tokens[8]
-				ref_stop = tokens[9]
-				btop = tokens[16]
-				alignment = { 'var_acc': tokens[1], 'ref_start': tokens[8],\
-					      'ref_stop': tokens[9], 'btop': tokens[16] }
-				alignments.append( alignment )
+				# Skip the line if it is commented, the number of fields isn't equal to 25 or
+				# the query read was not aligned
+				if line[0] != "#" and len(tokens) == 25 and tokens[1] != "-":
+					var_acc = tokens[1]
+					ref_start = tokens[8]
+					ref_stop = tokens[9]
+					if int(ref_start) > int(ref_stop):
+						temp = ref_start
+						ref_start = ref_stop
+						ref_stop = temp
+					btop = tokens[16]
+					alignment = { 'var_acc': var_acc, 'ref_start': ref_start,\
+						      'ref_stop': ref_stop, 'btop': btop }
+					alignments.append( alignment )
 		sra_alignments[accession] = alignments
 	return sra_alignments
 
-def get_flanks(path):
+def get_var_info(path):
 	'''
 	Retrieves the flanking sequence lengths for the SNP sequences			
 	Inputs
 	- path: path to the file that contains the flanking sequence lengths
 	Outputs
-	- flanks: a dictionary where the keys are SNP accessions and the values are pairs where the first item
-                  is the length of the left flank and the second is the length of the right flank
+	- var_info: a dictionary where the keys are SNP accessions and the values are tuples where the first entry\
+                    is the start position of the variant, the second is the stop position of the variant and \
+                    the third is the length of the variant sequence
 	'''
-	flanks = {}
+	var_info = {}
 	with open(path,'r') as input_file:
 		for line in input_file:
 			tokens = line.split()
-			accession = tokens[0]
-			left = tokens[1]
-			right = tokens[2]
-			length = tokens[3]
-			flanks[accession] = {'left':left,'right':right,'length':length}
-	return flanks
+			if len(tokens) == 4:
+				accession = tokens[0]
+				start = tokens[1]
+				stop = tokens[2]
+				length = tokens[3]
+				var_info[accession] = {'start':start,'stop':stop,'length':length}
+	return var_info
 
 def call_variants(var_freq):
 	'''
@@ -89,12 +99,12 @@ def call_variants(var_freq):
 			variants.append(var_acc)
 	return variants
 
-def get_sra_variants(sra_alignments,flanks):
+def get_sra_variants(sra_alignments,var_info):
 	'''
 	For all SRA accession, determines which variants exist in the SRA dataset	
 	Inputs
 	- sra_alignments: dict where the keys are SRA accessions and the values are lists of alignment dicts
-	- flanks: dict where the keys are SNP accessions and the values are the lengths of the flanks
+	- var_info: dict where the keys are SNP accessions and the values are the lengths of the var_info
 	Outputs
 	- variants: dict where the keys are the SRA accessions and the value is a list which contains the accessions
 		    of SNPs which exist in the SRA dataset
@@ -105,11 +115,11 @@ def get_sra_variants(sra_alignments,flanks):
 		var_freq = {}
 		for alignment in alignments:
 			var_acc = alignment['var_acc']
-			var_flanks = flanks[var_acc]
+			var_var_info = var_info[var_acc]
 			if var_acc not in var_freq:
 				var_freq[var_acc] = {'true':0,'false':0}
 			# Determine whether the variant exists in the particular SRA dataset
-			var_called = query_contains_ref_bases(alignment,var_flanks)
+			var_called = query_contains_ref_bases(alignment,var_var_info)
 			if var_called:
 				var_freq[var_acc]['true'] += 1	
 			else:
@@ -119,9 +129,13 @@ def get_sra_variants(sra_alignments,flanks):
 	return variants
 
 if __name__ == "__main__":
-	help_message = ""
-	usage_message = "%s [-h (help and usage)] [-m <directory containing .mbo files>] [-f <path to flanks info file>]" % (sys.argv[0])
-	options = "hm:f:"
+	help_message = "Given a directory with Magic-BLAST output files where each output file contains the\n" \
+                     + "alignment between an SRA dataset and known variants in a human genome, this script\n" \
+                     + "determines which variants each SRA dataset contains using a heuristic."
+	usage_message = "%s [-h (help and usage)] [-m <directory containing .mbo files>]" % (sys.argv[0]) \
+                      + "[-v <path to variant info file>]"
+	options = "hm:v:"
+
 	try:
 		opts,args = getopt.getopt(sys.argv[1:],options)
 	except getopt.GetoptError:
@@ -129,11 +143,12 @@ if __name__ == "__main__":
 		sys.exit(1)
 
 	if len(sys.argv) == 1:
-		print(usageMessage)
+		print(help_message)
+		print(usage_message)
 		sys.exit()
 
 	mbo_directory = None
-	flanks_path = None
+	var_info_path = None
 	
 	for opt, arg in opts:
 		if opt == '-h':
@@ -142,8 +157,8 @@ if __name__ == "__main__":
 			sys.exit(0)
 		elif opt == '-m':
 			mbo_directory = arg
-		elif opt == '-f':
-			flanks_path = arg
+		elif opt == '-v':
+			var_info_path = arg
 		elif opt == '-t':
 			unit_tests()
 			sys.exit(0)
@@ -153,7 +168,7 @@ if __name__ == "__main__":
 	if mbo_directory == None:
 		print("Error: please provide the directory containing your Magic-BLAST output files.")
 		optsIncomplete = True
-	if flanks_path == None:
+	if var_info_path == None:
 		print("Error: please provide the path to the file containing flanking sequence information.")
 		optsIncomplete = True
 	if optsIncomplete:
@@ -162,6 +177,5 @@ if __name__ == "__main__":
 
 	paths = get_mbo_paths(mbo_directory)
 	sra_alignments = get_sra_alignments(paths)
-	flanks = get_flanks(flanks_path)
-	variants = get_sra_variants(sra_alignments,flanks)
-	print(variants)
+	var_info = get_var_info(var_info_path)
+	#variants = get_sra_variants(sra_alignments,var_info)
