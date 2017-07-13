@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright: NCBI 2017
+# Author: Chipo Mashayomombe
  
 # create variables to store the data for the disease phenotype as well as the
 # number of 
