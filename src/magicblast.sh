@@ -3,8 +3,8 @@
 # Author: Sean La
 
 if [ "$#" -ne 3 ]; then
-	echo "Description: given a file containing SRA accessions and a BLAST database, this script runs Magic-BLAST" 
-	echo "on each SRA accessions."
+	echo "Description: Given a file containing SRA accessions and a BLAST database, this script runs Magic-BLAST" 
+	echo "             on each SRA dataset."
 	BASENAME=`basename "$0"`
 	echo "Usage: ${BASENAME} [SRA accessions file] [BLAST database name] [output directory]"
 	exit 0
