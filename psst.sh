@@ -45,3 +45,4 @@ ${SRC}/magicblast.sh ${SRA_ACC} variants ${MBO_DIR}
 
 ## Call variants in the SRA datasets
 ${SRC}/call_variants.py -m ${MBO_DIR} -v ${VAR_INFO}
+
