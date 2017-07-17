@@ -13,19 +13,27 @@ Here is what this pipeline does: We are developing a software *pipeline* to **id
 , crossed with database and datasets such as ClinVar, SRA, and GEO, and then build a pipeline for multiple genetic variants associated with diseases.
 
 
-## Usage
+## Usage:
 
-### Step 1 -- Extracting phenotypes
+Step 1:
+Generating a summary table:
 
-#### This script extracts 100 disease phenotypes that have the most associated SNPs in ClinVar that are asserted to be pathogenic
+* The script makes a table that summarizes the number of SNPs and pathogenic variants associated with the 100 disease phenotypes, as well as the number of SRA and GEO datasets available that are related to those phenotypes
 
-##### This truncates extensions and details and takes root terms
+Step 2:
+The pipeline finds SNP IDs for disease phenotypes from a list of 100 disease phenotypes that have the SNPs associated in ClinVar with the disease and are asserted to be pathogenic.
 
-###### It does not do any semantic clustering of like phenotypes
+Step 3:
 
-### Step 2 -- Generating a summary table
+Extracts flanking sequences for these SNP IDs, and also creates seperate fasta files for each disease containing both the SNP IDs and the respective sequences.
 
-#### This script makes a table that summarizes the number of SNPs and pathogenic variants associated with the 100 disease phenotypes, as well as the number of SRA and GEO datasets available that are related to those phenotypes
+Step 4:
 
-### Step 3 -- Specifying SNPs and Datasets for selected phenotypes 
+Uses makeblastdb to generate a database for each phenotype.
+
+Step 5:
+
+Perform alignment with magicblast using SRA accessions associated with disease phenotype.
+
+
 
