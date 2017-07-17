@@ -1,6 +1,10 @@
 # PSST
 Polygenic SNP Search Tool
 
+## Graphical Overview
+
+![Workflow](/relative/path/to/img.jpg?raw=true "Workflow.png")
+
 ## Overview
 
 Here is what this pipeline does: We are developing a software *pipeline* to **identify multiple SNPs that are associated with diseases**; including SNPs that modify the *penetrance* of other SNPs. We are looking to identify:
