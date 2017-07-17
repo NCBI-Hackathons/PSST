@@ -3,7 +3,7 @@ Polygenic SNP Search Tool
 
 ## Graphical Overview
 
-![Workflow](/relative/path/to/img.jpg?raw=true "Workflow.png")
+![Workflow](/media/Polygenic_SNP_Search_Tool.png?raw=true "Workflow.png")
 
 ## Overview
 
