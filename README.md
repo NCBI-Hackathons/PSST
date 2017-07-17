@@ -38,3 +38,4 @@ The `psst.sh` subpipeline is as follows:
 4. From the Magic-BLAST alignments, determines which SNPs are contained in the SRA datasets using a statistical heuristic.
 
 5. For each SRA dataset, outputs the set of IDs of the associated SNPs. 
+
