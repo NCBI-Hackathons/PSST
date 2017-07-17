@@ -35,7 +35,7 @@ Uses makeblastdb to generate a database for each phenotype.
 
 Step 5:
 
-Perform alignment with magicblast using SRA accessions associated with disease phenotype.
+Performs alignment with magicblast using SRA accessions associated with disease phenotype.
 
 
 
