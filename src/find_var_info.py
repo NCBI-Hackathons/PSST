@@ -83,9 +83,10 @@ if __name__ == '__main__':
 
 	for line in input_stream:
 		tokens = line.split("=")
-		name = tokens[0]
-		sequence = tokens[1]
-		sequences[name] = sequence
+		if len(tokens) == 2:
+			name = tokens[0]
+			sequence = tokens[1]
+			sequences[name] = sequence
 
 	input_stream.close()
 
