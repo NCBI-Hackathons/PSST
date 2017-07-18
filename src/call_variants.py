@@ -106,8 +106,8 @@ def get_sra_variants(sra_alignments,var_info):
 	- sra_alignments: dict where the keys are SRA accessions and the values are lists of alignment dicts
 	- var_info: dict where the keys are variant accessions and the values are information concerning the variants
 	Outputs
-	- variants: dict where the keys are the SRA accessions and the value is a list which contains the accessions
-		    of variants which exist in the SRA dataset
+	- variants: dict where the keys are the SRA accessions and the values are lists which contain the accessions
+		    of variants which exist in the SRA datasets
 	'''
 	variants = {}
 	for sra_acc in sra_alignments:
@@ -128,13 +128,32 @@ def get_sra_variants(sra_alignments,var_info):
 		variants[sra_acc] = sra_variants	
 	return variants
 
+def create_tsv(variants,output_path):
+	'''
+	Creates a TSV file containing the set of variants each SRA dataset contains.
+	Inputs
+	- variants: dict where the keys are the SRA accessions and the values are lists which contain the accessions
+		    of variants which exist in the SRA datasets
+	- output_path: path to where to construct the output file
+	'''
+	with open(output_path,'w') as tsv:
+		header = "SRA	Variants\n"
+		tsv.write(header)
+		for sra_acc in variants:
+			line = "%s" % (sra_acc)		
+			sra_variants = variants[sra_acc]
+			for var_acc in sra_variants:
+				line = "%s	%s" % (line, var_acc)
+			tsv.write(line)
+			tsv.write('\n')
+
 if __name__ == "__main__":
 	help_message = "Given a directory with Magic-BLAST output files where each output file contains the\n" \
                      + "alignment between an SRA dataset and known variants in a human genome, this script\n" \
                      + "determines which variants each SRA dataset contains using a heuristic."
-	usage_message = "%s [-h (help and usage)] [-m <directory containing .mbo files>]" % (sys.argv[0]) \
-                      + "[-v <path to variant info file>]"
-	options = "hm:v:"
+	usage_message = "%s [-h (help and usage)] [-m <directory containing .mbo files>] " % (sys.argv[0]) \
+                      + "[-v <path to variant info file>] [-o <output path for TSV file>]"
+	options = "hm:v:o:"
 
 	try:
 		opts,args = getopt.getopt(sys.argv[1:],options)
@@ -149,6 +168,7 @@ if __name__ == "__main__":
 
 	mbo_directory = None
 	var_info_path = None
+	output_path = None
 	
 	for opt, arg in opts:
 		if opt == '-h':
@@ -159,6 +179,8 @@ if __name__ == "__main__":
 			mbo_directory = arg
 		elif opt == '-v':
 			var_info_path = arg
+		elif opt == '-o':
+			output_path = arg
 		elif opt == '-t':
 			unit_tests()
 			sys.exit(0)
@@ -171,6 +193,9 @@ if __name__ == "__main__":
 	if var_info_path == None:
 		print("Error: please provide the path to the file containing flanking sequence information.")
 		optsIncomplete = True
+	if output_path = None:
+		print("Error: please provide an output path for the TSV file.")
+		optsIncomplete = True
 	if optsIncomplete:
 		print(usage_message)
 		sys.exit(1)
@@ -179,4 +204,4 @@ if __name__ == "__main__":
 	sra_alignments = get_sra_alignments(paths)
 	var_info = get_var_info(var_info_path)
 	variants = get_sra_variants(sra_alignments,var_info)
-	print(variants)
+	create_tsv(variants,output_path)
