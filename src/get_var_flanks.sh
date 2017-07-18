@@ -2,6 +2,8 @@
 # Copyright: 2017
 # Authors: Anmol Vohra, Ben Busby, and Sean La
 
+set -e
+
 if [ "$#" -ne 2 ]; then
 	echo "Description: given a list of variant accessions, this script retrieves their respective flanking"
 	echo "sequences and outputs into the given output file."

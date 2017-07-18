@@ -2,6 +2,8 @@
 # Copyright: NCBI 2017
 # Authors: Chipo Mashayomombe, Sean La
 
+set -e
+
 if [ "$#" -ne 2 ]; then
 	echo "Description: Given a phenotype, outputs a file containing SRA accessions"
 	BASENAME=`basename "$0"`

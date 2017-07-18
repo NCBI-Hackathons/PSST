@@ -2,6 +2,8 @@
 # Copyright: NCBI 2017
 # Author: Anmol Vohra
 
+set -e
+
 if [ "$#" -ne 2 ]; then
 	echo "Description: given a disease phenotype, this script retrieves variants (currently only SNPs) related"
 	echo "to the phenotype."

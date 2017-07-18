@@ -2,6 +2,8 @@
 # Copyright: NCBI 2017
 # Author: Chipo Mashayomombe, Sean La
 
+set -e
+
 if [ "$#" -ne 1 ]; then
 	echo "Description retrieves the latest ClinVar GRCh38 VCF file release, takes the top 100 phenotypes"
 	echo "depicted in the VCF file and outputs them into another file."
