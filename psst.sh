@@ -2,6 +2,8 @@
 # Copyright: NCBI 2017
 # Authors: Sean La
 
+set -e
+
 if [ "$#" -ne 2 ]; then
 	echo "Description: Given a disease/phenotype, this script retrieves all related variant and SRA accession"
 	echo "             numbers and determines the set of variants that occur in each SRA dataset."
@@ -45,4 +47,3 @@ ${SRC}/magicblast.sh ${SRA_ACC} variants ${MBO_DIR}
 
 ## Call variants in the SRA datasets
 ${SRC}/call_variants.py -m ${MBO_DIR} -v ${VAR_INFO}
-
