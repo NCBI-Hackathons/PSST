@@ -5,7 +5,7 @@ Polygenic SNP Search Tool
 
 ![Workflow](/media/Polygenic_SNP_Search_Tool.png?raw=true "Workflow.png")
 
-## Overview
+## Overview:
 
 The Polygenic SNP Search Tool is an open-source pipeline that **identifies multiple SNPs that are associated with diseases**; including SNPs that modify the *penetrance* of other SNPs. This pipeline identifies:
 * Asserted pathogenic SNPs
