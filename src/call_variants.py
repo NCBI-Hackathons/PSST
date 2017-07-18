@@ -95,7 +95,7 @@ def call_variants(var_freq):
 		true = frequencies['true']
 		false = frequencies['false']
 		percentage = true/(true+false)
-		if percentage > 0.4: # For now, we use this simple heuristic.
+		if percentage > 0.1: # For now, we use this simple heuristic.
 			variants.append(var_acc)
 	return variants
 
@@ -193,7 +193,7 @@ if __name__ == "__main__":
 	if var_info_path == None:
 		print("Error: please provide the path to the file containing flanking sequence information.")
 		optsIncomplete = True
-	if output_path = None:
+	if output_path == None:
 		print("Error: please provide an output path for the TSV file.")
 		optsIncomplete = True
 	if optsIncomplete:
