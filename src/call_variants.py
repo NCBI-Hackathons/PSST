@@ -104,10 +104,10 @@ def get_sra_variants(sra_alignments,var_info):
 	For all SRA accession, determines which variants exist in the SRA dataset	
 	Inputs
 	- sra_alignments: dict where the keys are SRA accessions and the values are lists of alignment dicts
-	- var_info: dict where the keys are SNP accessions and the values are the lengths of the var_info
+	- var_info: dict where the keys are variant accessions and the values are information concerning the variants
 	Outputs
 	- variants: dict where the keys are the SRA accessions and the value is a list which contains the accessions
-		    of SNPs which exist in the SRA dataset
+		    of variants which exist in the SRA dataset
 	'''
 	variants = {}
 	for sra_acc in sra_alignments:
@@ -115,7 +115,7 @@ def get_sra_variants(sra_alignments,var_info):
 		var_freq = {}
 		for alignment in alignments:
 			var_acc = alignment['var_acc']
-			var_var_info = var_info[var_acc]
+			info = var_info[var_acc]
 			if var_acc not in var_freq:
 				var_freq[var_acc] = {'true':0,'false':0}
 			# Determine whether the variant exists in the particular SRA dataset
@@ -176,6 +176,10 @@ if __name__ == "__main__":
 		sys.exit(1)
 
 	paths = get_mbo_paths(mbo_directory)
+	print(paths)
 	sra_alignments = get_sra_alignments(paths)
+	print(sra_alignments)
 	var_info = get_var_info(var_info_path)
-	#variants = get_sra_variants(sra_alignments,var_info)
+	print(var_info)
+	variants = get_sra_variants(sra_alignments,var_info)
+	print(variants)
