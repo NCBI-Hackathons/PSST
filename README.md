@@ -29,3 +29,6 @@ The `psst.sh` subpipeline is as follows:
 
 5. For each SRA dataset, outputs the set of IDs of the associated SNPs. 
 
+# Disease Clustering:
+
+Clustering disease types through the ClinVar database in various categories such as assorted metabolic diseases and breast cancer to see the relationship among human variations and phenotypes. 
