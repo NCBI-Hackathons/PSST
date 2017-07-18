@@ -18,6 +18,7 @@ PHENOTYPE=$1
 DIR=$2
 mkdir -p ${DIR} # If the working directory does not exist, create it
 SRC=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/src
+export BLASTDB=${DIR}
 
 ## Find the variant and SRA accessions
 echo "Finding variant and SRA accessions..."
