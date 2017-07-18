@@ -73,9 +73,9 @@ def get_var_info(path):
 			tokens = line.split()
 			if len(tokens) == 4:
 				accession = tokens[0]
-				start = tokens[1]
-				stop = tokens[2]
-				length = tokens[3]
+				start = int(tokens[1])
+				stop = int(tokens[2])
+				length = int(tokens[3])
 				var_info[accession] = {'start':start,'stop':stop,'length':length}
 	return var_info
 
@@ -119,13 +119,13 @@ def get_sra_variants(sra_alignments,var_info):
 			if var_acc not in var_freq:
 				var_freq[var_acc] = {'true':0,'false':0}
 			# Determine whether the variant exists in the particular SRA dataset
-			var_called = query_contains_ref_bases(alignment,var_var_info)
+			var_called = query_contains_ref_bases(alignment,info)
 			if var_called:
 				var_freq[var_acc]['true'] += 1	
 			else:
 				var_freq[var_acc]['false'] += 1	
 		sra_variants = call_variants(var_freq) 
-		variants[var_acc] = sra_variants	
+		variants[sra_acc] = sra_variants	
 	return variants
 
 if __name__ == "__main__":
@@ -176,10 +176,7 @@ if __name__ == "__main__":
 		sys.exit(1)
 
 	paths = get_mbo_paths(mbo_directory)
-	print(paths)
 	sra_alignments = get_sra_alignments(paths)
-	print(sra_alignments)
 	var_info = get_var_info(var_info_path)
-	print(var_info)
 	variants = get_sra_variants(sra_alignments,var_info)
 	print(variants)
