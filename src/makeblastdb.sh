@@ -1,6 +1,6 @@
 #!/bin/bash
 # Copyright: NCBI 2017
-# Authors: Sean La
+# Authors: Sean La & Anmol Vohra
 
 set -e
 
