@@ -3,7 +3,7 @@
 # Authors: Sean La
 import getopt
 import sys
-from get_alleles import get_major_allele
+from get_alleles import get_nth_allele
 
 help_message = "Given a file containing lines of the form 'ACCESSION=W[X/Y]Z', this script creates a FASTA file\n" \
              + "where the header identifiers are 'ACCESSION' and the sequence is the major allele, i.e. 'WXZ'" 
@@ -53,6 +53,6 @@ with open(input_path,'r') as input_stream, open(output_path,'w') as output_strea
 		if len(tokens) == 2:
 			accession = tokens[0]
 			sequence = tokens[1]
-			major_allele = get_major_allele(sequence)
+			allele = get_nth_allele(sequence,2)
 			output_stream.write( ">%s\n" % (accession) )
-			output_stream.write( "%s" % (major_allele) )
+			output_stream.write( "%s" % (allele) )
