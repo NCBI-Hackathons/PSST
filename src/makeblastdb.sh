@@ -2,6 +2,8 @@
 # Copyright: NCBI 2017
 # Authors: Sean La
 
+set -e
+
 if [ "$#" -ne 2 ]; then
 	echo "Description: this script creates a BLAST database given a FASTA file and a directory."
 	echo "The name of the BLAST database will be the basename of the input FASTA file sans extensions."
