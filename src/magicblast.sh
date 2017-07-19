@@ -24,9 +24,9 @@ export MAPPER_NO_OVERLAPPED_HSP_MERGED=1
 
 for ACC in $(cat ${SRA}); do
 	OUTPUT_FILE=${OUTPUT_DIR}/${ACC}.mbo
-	magicblast -sra ${ACC} -db ${DB_NAME} -out ${OUTPUT_FILE} -outfmt tabular -parse_deflines true -num_threads ${THREADS} &
+	magicblast -sra ${ACC} -db ${DB_NAME} -out ${OUTPUT_FILE} -outfmt tabular -parse_deflines T -num_threads ${THREADS} &
 	# Limit the number of child processes running so we don't overload the local computer
-	while [ $(jobs | wc -l) -gt "${MAX_PROCS}" ]; do sleep 1; done
+	while [ $(jobs | wc -l) -ge "${MAX_PROCS}" ]; do sleep 1; done
 done
 
 # Wait for all processes to finish before exiting
