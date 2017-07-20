@@ -56,5 +56,5 @@ ${SRC}/magicblast.sh ${SRA_ACC} variants ${MBO_DIR}
 ## Call variants in the SRA datasets
 echo "Calling variants..."
 TSV=${DIR}/${PHENOTYPE}.tsv
-${SRC}/call_variants.py -m ${MBO_DIR} -v ${VAR_INFO} -o ${TSV}
+${SRC}/call_variants.py -m ${MBO_DIR} -v ${VAR_INFO} -f ${VAR_FASTA} -o ${TSV}
 echo "PSST pipeline done. Result file can be found at ${TSV}."
