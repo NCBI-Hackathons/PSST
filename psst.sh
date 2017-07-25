@@ -5,7 +5,7 @@
 # Exit the script immediately if there is an error
 set -e
 
-if [ "$#" -ne 2 ]; then
+if [ "$#" -ne 4 ]; then
 	echo "Description: Given a disease/phenotype, this script retrieves all related variant and SRA accession"
 	echo "             numbers and determines the set of variants that occur in each SRA dataset."
 	BASENAME=`basename "$0"`
