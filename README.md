@@ -15,16 +15,6 @@ The Polygenic SNP Search Tool is an open-source pipeline that **identifies multi
 
 ## Usage:
 
-### Step 1 - Determine the top 100 phenotypes 
-
-The script `top_100_phenotypes.sh` determines the top 100 disease phenotypes described in the latest GRCh38 release of ClinVar and outputs this into a file.
-
-### Step 2 - Generate a summary table for the top 100 phenotypes
-
-The script `summary_table.sh` generates a table that summarizes the number of SNPs and pathogenic variants associated with the top 100 disease phenotypes, as well as the number of SRA and GEO datasets available that are related to those phenotypes.
-
-### Step 3 - Call polygenic variants in the SRA datasets for a particular phenotype
-
 The script `psst.sh` determines the set of SNPs that are contained in each SRA dataset associated with the given phenotype/disease. For example, to determine the set of SNPs associated with each SRA dataset related to breast-ovarian cancer, run the command `psst.sh breast-ovarian_cancer ${PWD}`. This script will then output a TSV file describing which SNPs are associated with the breast-ovarian cancer SRA datasets. 
 
 The `psst.sh` subpipeline is as follows:
@@ -39,3 +29,6 @@ The `psst.sh` subpipeline is as follows:
 
 5. For each SRA dataset, outputs the set of IDs of the associated SNPs. 
 
+## Disease Clustering:
+
+Clustering disease types through the ClinVar database in various categories such as assorted metabolic diseases and breast cancer to see the relationship among human variations and phenotypes. 

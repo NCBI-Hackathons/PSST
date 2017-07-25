@@ -120,7 +120,7 @@ def call_variants(var_freq):
 		true = frequencies['true']
 		false = frequencies['false']
 		percentage = true/(true+false)
-		if percentage > 0.1: # For now, we use this simple heuristic.
+		if percentage > 0.4: # For now, we use this simple heuristic.
 			variants.append(var_acc)
 	return variants
 
@@ -235,8 +235,8 @@ if __name__ == "__main__":
 		sys.exit(1)
 
 	paths = get_mbo_paths(mbo_directory)
-	sra_alignments = get_sra_alignments(paths)
-	var_info = get_var_info(var_info_path)
 	accession_map = get_accession_map(fasta_path)
+	sra_alignments = get_sra_alignments(paths,accession_map)
+	var_info = get_var_info(var_info_path)
 	variants = get_sra_variants(sra_alignments,var_info)
 	create_tsv(variants,output_path)

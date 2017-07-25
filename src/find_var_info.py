@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import sys
 import argparse
-from get_alleles import get_major_allele
+from get_alleles import get_nth_allele
 
 def find_var_info(sequences):
 	'''
 	Finds the length of the flanking sequences left and right of a variant.
-	Also returns the length of the major allele
+	Also returns the length of the minor allele
 	Input
 	- sequences: dictionary of sequences
 	Output
@@ -15,14 +15,14 @@ def find_var_info(sequences):
 	var_info = {}
 	for seq_name in sequences:
 		sequence = sequences[seq_name]
-		major_allele = get_major_allele(sequence)
+		minor_allele = get_nth_allele(sequence,2)
 
 		left_bracket_index = sequence.find('[')
 		right_bracket_index = sequence.find(']')
 		start = left_bracket_index
 
 		right_flank_length = len(sequence[right_bracket_index+1:])
-		length = len(major_allele)
+		length = len(minor_allele)
 		stop = length - right_flank_length
 		var_info[seq_name] = (start,stop,length)
 	return var_info
