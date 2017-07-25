@@ -20,4 +20,4 @@ def get_nth_allele(seq,n):
         variant = var_tokens[index]
         # Construct the allele
         allele = seq[:left_bracket_index] + variant + seq[right_bracket_index + 1:]
-        return major_allele
+        return allele

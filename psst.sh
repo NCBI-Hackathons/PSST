@@ -9,13 +9,16 @@ if [ "$#" -ne 2 ]; then
 	echo "Description: Given a disease/phenotype, this script retrieves all related variant and SRA accession"
 	echo "             numbers and determines the set of variants that occur in each SRA dataset."
 	BASENAME=`basename "$0"`
-	echo "Usage: ${BASENAME} [phenotype] [working directory]"
+	echo "Usage: ${BASENAME} [disease] [working directory] [threads per Magic-BLAST run] [max num of child procs]"
 	exit 0
 fi
 
 ## Retrieve the command line arguments and set up directories, paths
 PHENOTYPE=$1
 DIR=$2
+THREADS=$3
+PROCS=$4
+
 mkdir -p ${DIR} # If the working directory does not exist, create it
 SRC=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/src
 export BLASTDB=${DIR}
@@ -51,10 +54,10 @@ ${SRC}/makeblastdb.sh ${VAR_FASTA} ${DIR}
 echo "Aligning SRA datasets onto the variants..."
 MBO_DIR=${DIR}/mbo # We will store the .mbo files here
 mkdir -p ${MBO_DIR} # Create the directory if it doesn't exist yet
-${SRC}/magicblast.sh ${SRA_ACC} variants ${MBO_DIR}
+${SRC}/magicblast.sh ${SRA_ACC} variants ${MBO_DIR} ${THREADS} ${PROCS}
 
 ## Call variants in the SRA datasets
 echo "Calling variants..."
 TSV=${DIR}/${PHENOTYPE}.tsv
-${SRC}/call_variants.py -m ${MBO_DIR} -v ${VAR_INFO} -o ${TSV}
+${SRC}/call_variants.py -m ${MBO_DIR} -v ${VAR_INFO} -f ${VAR_FASTA} -o ${TSV}
 echo "PSST pipeline done. Result file can be found at ${TSV}."
