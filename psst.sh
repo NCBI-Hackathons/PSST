@@ -6,8 +6,8 @@
 set -e
 
 if [ "$#" -ne 5 ]; then
-	echo "Description: Given lists of SRA and SNP accessions, determines the set of SNPs that occur in each SRA"
-	echo "             dataset."
+	printf "Description: Given lists of SRA and SNP accessions, determines the set of SNPs that occur in each SRA"
+	printf " dataset.\n"
 	BASENAME=`basename "$0"`
 	printf "Usage: ${BASENAME} [SRA accessions] [SNP accessions] [working directory] [threads] "
 	printf "[max number of child processes]\n"
