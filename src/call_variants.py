@@ -148,7 +148,7 @@ def get_sra_variants(sra_alignments,var_info):
 			var_called = query_contains_ref_bases(alignment,info)
 			if var_called == True:
 				var_freq[var_acc]['true'] += 1	
-			else if var_called == False:
+			elif var_called == False:
 				var_freq[var_acc]['false'] += 1	
 		sra_variants = call_variants(var_freq) 
 		variants[sra_acc] = sra_variants	
