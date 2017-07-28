@@ -130,7 +130,7 @@ def query_contains_ref_bases(alignment,flank_info):
 	length = flank_info['length']
 	# Determines whether the aligned subsequence of the reference even includes the variant
 	if ref_start > start or ref_stop < stop: 
-		return False
+		return None
 	else:
 		# Adjust the variant boundary indices to be compatible with the local alignment given by the BTOP
 		# string
