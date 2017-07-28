@@ -178,8 +178,8 @@ if __name__ == "__main__":
                      + "             contains the alignment between an SRA dataset and known variants in a human\n" \
                      + "             genome, this script determines which variants each SRA dataset contains\n" \
                      + "             using a heuristic."
-	usage_message = "Usage: %s [-h (help and usage)] [-m <directory containing .mbo files>]\n" % (sys.argv[0]) \
-                      + "              [-v <path to variant info file>] [-f <path to the reference FASTA file]\n"\
+	usage_message = "Usage: %s [-h (help and usage)]\n[-m <directory containing .mbo files>]\n" % (sys.argv[0]) \
+                      + "              [-v <path to variant info file>]\n[-f <path to the reference FASTA file]\n"\
                       + "              [-o <output path for TSV file>]"
 	options = "hm:v:f:o:"
 
