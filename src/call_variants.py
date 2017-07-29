@@ -114,15 +114,17 @@ def call_variants(var_freq):
 	Outputs
 	- variants: a list which contains the SNP accessions of those SNPs which exist in the SRA dataset
 	'''
-	variants = []
+	variants = {'heterozygous':[],'homozygous':[]}
 	for var_acc in var_freq:
 		frequencies = var_freq[var_acc]
 		true = frequencies['true']
 		false = frequencies['false']
 		try:
 			percentage = true/(true+false)
-			if percentage > 0.4: # For now, we use this simple heuristic.
-				variants.append(var_acc)
+			if percentage > 0.8: # For now, we use this simple heuristic.
+				variants['homozygous'].append(var_acc)
+			elif percentage > 0.3:
+				variants['heterozygous'].append(var_acc)
 		except ZeroDivisionError: # We ignore division errors because they correspond to no mapped reads
 			pass
 	return variants
@@ -166,14 +168,18 @@ def create_tsv(variants,output_path):
 	- output_path: path to where to construct the output file
 	'''
 	with open(output_path,'w') as tsv:
-		header = "SRA	Variants\n"
+		header = "SRA\tHeterozygous SNPs\tHomozygous SNPs\n"
 		tsv.write(header)
 		for sra_acc in variants:
 			line = "%s" % (sra_acc)		
 			sra_variants = variants[sra_acc]
-			for var_acc in sra_variants:
-				line = "%s	%s" % (line, var_acc)
-			tsv.write(line)
+			line = line + "\t"
+			for var_acc in sra_variants['heterozygous']:
+				line = line + var_acc + ","
+			line = line + "\t"
+			for var_acc in sra_variants['homozygous']:
+				line = line + var_acc + ","
+			tsv.write( line.rstrip() )
 			tsv.write('\n')
 
 if __name__ == "__main__":
