@@ -105,7 +105,7 @@ def translate_var_boundary(boundary,ref):
 	# find the position of the ref base in the reference alignment
 	alignment_boundary = 0 # This will be the position of the ref base in the reference alignment
 	seq_index = 0 # Keeps track of the current position in the reference sequence 
-	while seq_index < boundary - 1 and alignment_boundary < len(ref):
+	while seq_index < boundary and alignment_boundary < len(ref):
 		current_base = ref[alignment_boundary]
 		if current_base != "-":
 			seq_index += 1
@@ -172,8 +172,8 @@ def unit_tests():
 	assert(ref == "====-G__________====")
 
 	alignment_start = translate_var_boundary(start,ref)
-	alignment_stop = translate_var_boundary(stop,ref)
 	assert(alignment_start == start + 1)
+	alignment_stop = translate_var_boundary(stop,ref)
 	assert(alignment_stop == stop + 1)
 
 	assert( query_contains_ref_bases(alignment,flank_info) )
