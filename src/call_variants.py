@@ -69,9 +69,9 @@ def get_sra_alignments(paths,accession_map):
 				# the query read was not aligned
 				if line[0] != "#" and len(tokens) == 25 and tokens[1] != "-":
 					var_acc = accession_map[ tokens[1] ]
-					ref_start = tokens[8]
-					ref_stop = tokens[9]
-					if int(ref_start) > int(ref_stop):
+					ref_start = int(tokens[8])
+					ref_stop = int(tokens[9])
+					if ref_start > ref_stop:
 						temp = ref_start
 						ref_start = ref_stop
 						ref_stop = temp
@@ -119,9 +119,12 @@ def call_variants(var_freq):
 		frequencies = var_freq[var_acc]
 		true = frequencies['true']
 		false = frequencies['false']
-		percentage = true/(true+false)
-		if percentage > 0.4: # For now, we use this simple heuristic.
-			variants.append(var_acc)
+		try:
+			percentage = true/(true+false)
+			if percentage > 0.4: # For now, we use this simple heuristic.
+				variants.append(var_acc)
+		except ZeroDivisionError: # We ignore division errors because they correspond to no mapped reads
+			pass
 	return variants
 
 def get_sra_variants(sra_alignments,var_info):
