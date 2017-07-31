@@ -213,7 +213,6 @@ def create_variant_matrix(variants):
                 matrix[variant_1] = {}
             if variant_2 not in matrix:
                 matrix[variant_2] = {}
-            # If this holds, this also implies variant_1 not in matrix[variant_2]
             if variant_2 not in matrix[variant_1]: 
                 matrix[variant_1][variant_2] = 0
             if variant_1 not in matrix[variant_2]:
@@ -243,8 +242,8 @@ if __name__ == "__main__":
                      + "             genome, this script determines which variants each SRA dataset contains\n" \
                      + "             using a heuristic."
     usage_message = "Usage: %s\n[-h (help and usage)]\n[-m <directory containing .mbo files>]\n" % (sys.argv[0]) \
-                      + "[-v <path to variant info file>]\n[-f <path to the reference FASTA file]\n"\
-                      + "[-o <output path for TSV file>]"
+                      + "[-v <path to variant info file>]\n[-f <path to the reference FASTA file>]\n"\
+                      + "[-o <output path for TSV file>]\n[-t <unit tests>]"
     options = "hm:v:f:o:t"
 
     try:
