@@ -86,31 +86,31 @@ def read_flank_info(path):
 			tokens = line.split()
 			# The first item is the ID of the SNP
 			# The rest are the flank lengths and length of the major allele sequence
-			flank_info[tokens[0]] = {'start':tokens[1],'stop':tokens[2],'length':tokens[3]}
+			flank_info[tokens[0]] = {'start':int(tokens[1]),'stop':int(tokens[2]),'length':int(tokens[3])}
 	return flank_info
 			
 
-def translate_var_boundary(start,ref):
+def translate_var_boundary(boundary,ref):
 	'''
 	Translates the start boundary of the variant of interest in the reference sequence into the start boundary
 	of the variant in the reference alignment
 	e.g.
 	Given ref = ATCG, start = 1 and ref_alignment = A-TCG, this script outputs alignment_start = 2
 	Inputs
-	- (int) start: the length of the start flank in the alignment
+	- (int) boundary: the index of the boundary of the variant
 	- (str) ref: the reference alignment
 	Outputs
-	- (int) alignment_start: the length of the stop most boundary of the start flank in the alignment
+	- (int) alignment_boundary: the length of the stop most boundary of the start flank in the alignment
 	'''
 	# find the position of the ref base in the reference alignment
-	alignment_start = 0 # This will be the position of the ref base in the reference alignment
-	seq_start = 0 # Keeps track of the current position in the reference sequence 
-	while seq_start < start - 1 and alignment_start - 1 < len(ref):
-		current_base = ref[alignment_start]
+	alignment_boundary = 0 # This will be the position of the ref base in the reference alignment
+	seq_index = 0 # Keeps track of the current position in the reference sequence 
+	while seq_index < boundary and alignment_boundary < len(ref):
+		current_base = ref[alignment_boundary]
 		if current_base != "-":
-			seq_start += 1
-		alignment_start += 1
-	return alignment_start + 1
+			seq_index += 1
+		alignment_boundary += 1
+	return alignment_boundary
 
 def query_contains_ref_bases(alignment,flank_info):
 	'''
@@ -130,7 +130,7 @@ def query_contains_ref_bases(alignment,flank_info):
 	length = flank_info['length']
 	# Determines whether the aligned subsequence of the reference even includes the variant
 	if ref_start > start or ref_stop < stop: 
-		return False
+		return None
 	else:
 		# Adjust the variant boundary indices to be compatible with the local alignment given by the BTOP
 		# string
@@ -172,8 +172,8 @@ def unit_tests():
 	assert(ref == "====-G__________====")
 
 	alignment_start = translate_var_boundary(start,ref)
-	alignment_stop = translate_var_boundary(stop,ref)
 	assert(alignment_start == start + 1)
+	alignment_stop = translate_var_boundary(stop,ref)
 	assert(alignment_stop == stop + 1)
 
 	assert( query_contains_ref_bases(alignment,flank_info) )
