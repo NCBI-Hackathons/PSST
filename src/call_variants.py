@@ -23,15 +23,6 @@ def get_accession_map(fasta_path):
     '''
     accession_map = {}
     with open(fasta_path,'r') as fasta:
-<<<<<<< HEAD
-            id_number = 0
-            for line in fasta:
-                    if line[0] == ">":
-                            accession = line[1:].rstrip()
-                            accession_map[str(id_number)] = accession
-                            id_number += 1
-    return accession_map
-=======
         id_number = 0
         for line in fasta:
             if line[0] == ">":
@@ -39,8 +30,6 @@ def get_accession_map(fasta_path):
                 accession_map[str(id_number)] = accession
                 id_number += 1
     return accession_map
-
->>>>>>> develop
 
 def get_mbo_paths(directory):
     '''
@@ -72,11 +61,7 @@ def get_sra_alignments(paths,accession_map):
     sra_alignments = {}
     for accession in paths:
         path = paths[accession]
-<<<<<<< HEAD
-        alignments = [] 
-=======
         alignments = []    
->>>>>>> develop
         with open(path,'r') as mbo:
             for line in mbo:
                 tokens = line.split()
@@ -84,15 +69,9 @@ def get_sra_alignments(paths,accession_map):
                 # the query read was not aligned
                 if line[0] != "#" and len(tokens) == 25 and tokens[1] != "-":
                     var_acc = accession_map[ tokens[1] ]
-<<<<<<< HEAD
-                    ref_start = tokens[8]
-                    ref_stop = tokens[9]
-                    if int(ref_start) > int(ref_stop):
-=======
                     ref_start = int(tokens[8])
                     ref_stop = int(tokens[9])
                     if ref_start > ref_stop:
->>>>>>> develop
                         temp = ref_start
                         ref_start = ref_stop
                         ref_stop = temp
@@ -139,20 +118,11 @@ def call_variants(var_freq):
     Outputs
     - variants: a list which contains the SNP accessions of those SNPs which exist in the SRA dataset
     '''
-<<<<<<< HEAD
-    variants = []
-=======
     variants = {'heterozygous':[],'homozygous':[]}
->>>>>>> develop
     for var_acc in var_freq:
         frequencies = var_freq[var_acc]
         true = frequencies['true']
         false = frequencies['false']
-<<<<<<< HEAD
-        percentage = true/(true+false)
-        if percentage > 0.4: # For now, we use this simple heuristic.
-            variants.append(var_acc)
-=======
         try:
             percentage = true/(true+false)
             if percentage > 0.8: # For now, we use this simple heuristic.
@@ -161,14 +131,10 @@ def call_variants(var_freq):
                 variants['heterozygous'].append(var_acc)
         except ZeroDivisionError: # We ignore division errors because they correspond to no mapped reads
             pass
->>>>>>> develop
     return variants
 
 def get_sra_variants(sra_alignments,var_info):
     '''
-<<<<<<< HEAD
-    For all SRA accession, determines which variants exist in the SRA dataset   
-=======
     For all SRA accession, determines which variants exist in the SRA dataset    
 >>>>>>> develop
     Inputs
@@ -190,17 +156,10 @@ def get_sra_variants(sra_alignments,var_info):
                 var_freq[var_acc] = {'true':0,'false':0}
             # Determine whether the variant exists in the particular SRA dataset
             var_called = query_contains_ref_bases(alignment,info)
-<<<<<<< HEAD
-            if var_called:
-                var_freq[var_acc]['true'] += 1  
-            else:
-                var_freq[var_acc]['false'] += 1 
-=======
             if var_called == True:
                 var_freq[var_acc]['true'] += 1    
             elif var_called == False:
                 var_freq[var_acc]['false'] += 1    
->>>>>>> develop
         sra_variants = call_variants(var_freq) 
         variants[sra_acc] = sra_variants    
     return variants
@@ -214,17 +173,6 @@ def create_tsv(variants,output_path):
     - output_path: path to where to construct the output file
     '''
     with open(output_path,'w') as tsv:
-<<<<<<< HEAD
-        header = "SRA   Variants\n"
-        tsv.write(header)
-        for sra_acc in variants:
-            line = "%s" % (sra_acc)     
-            sra_variants = variants[sra_acc]
-            for var_acc in sra_variants:
-                line = "%s  %s" % (line, var_acc)
-            tsv.write(line)
-            tsv.write('\n')
-=======
         header = "SRA\tHeterozygous SNPs\tHomozygous SNPs\n"
         tsv.write(header)
         for sra_acc in variants:
@@ -291,25 +239,16 @@ def unit_tests():
             assert( right_hand_side >= 1 )
             assert( left_hand_side == right_hand_side )
     print("All unit tests passed!")
->>>>>>> develop
 
 if __name__ == "__main__":
     help_message = "Description: Given a directory with Magic-BLAST output files where each output file\n" \
                      + "             contains the alignment between an SRA dataset and known variants in a human\n" \
                      + "             genome, this script determines which variants each SRA dataset contains\n" \
                      + "             using a heuristic."
-<<<<<<< HEAD
-    usage_message = "Usage: %s [-h (help and usage)] [-m <directory containing .mbo files>]\n" % (sys.argv[0]) \
-                      + "              [-v <path to variant info file>] [-f <path to the reference FASTA file]\n"\
-                      + "              [-o <output path for TSV file>]"
-    options = "hm:v:f:o:"
-=======
     usage_message = "Usage: %s\n[-h (help and usage)]\n[-m <directory containing .mbo files>]\n" % (sys.argv[0]) \
                       + "[-v <path to variant info file>]\n[-f <path to the reference FASTA file>]\n"\
                       + "[-o <output path for TSV file>]\n[-t <unit tests>]"
     options = "hm:v:f:o:t"
->>>>>>> develop
-
     try:
         opts,args = getopt.getopt(sys.argv[1:],options)
     except getopt.GetoptError:
@@ -367,7 +306,4 @@ if __name__ == "__main__":
     var_info = get_var_info(var_info_path)
     variants = get_sra_variants(sra_alignments,var_info)
     create_tsv(variants,output_path)
-<<<<<<< HEAD
-=======
     matrix = create_variant_matrix(variants)
->>>>>>> develop
