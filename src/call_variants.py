@@ -5,6 +5,7 @@ import getopt
 import sys
 import os
 from itertools import combinations
+from multiprocessing.pool import Pool
 # Project-specific packages
 from queries_with_ref_bases import query_contains_ref_bases
 
@@ -131,18 +132,20 @@ def call_variants(var_freq):
             pass
     return variants
 
-def get_sra_variants(sra_alignments,var_info):
+def call_sra_variants(alignments_and_info)
     '''
     For all SRA accession, determines which variants exist in the SRA dataset    
     Inputs
-    - sra_alignments: dict where the keys are SRA accessions and the values are lists of alignment dicts
-    - var_info: dict where the keys are variant accessions and the values are information concerning the variants
+    - alignments_and_info: a dict which contains
+        - sra_alignments: dict where the keys are SRA accessions and the values are lists of alignment dicts
+        - var_info: dict where the keys are variant accessions and the values are information concerning the variants
+        - keys: list which contains the keys of the SRA accessions to analyze
     Outputs
     - variants: dict where the keys are SRA accessions and the value is another dict that contains the homozgyous and 
                 heterozygous variants in separate lists 
     '''
     variants = {}
-    for sra_acc in sra_alignments:
+    for sra_acc in keys:
         alignments = sra_alignments[sra_acc]
         var_freq = {}
         for alignment in alignments:
@@ -227,12 +230,38 @@ def create_variant_matrix(variants):
             matrix[variant_2][variant_1] = matrix[variant_1][variant_2]
     return matrix
 
+def partition(lst,n):
+    '''
+    Partitions a list into n lists
+    Inputs
+    - (list) lst
+    Outputs
+    - partitioned_lists: a list of lists 
+    '''
+    division = len(lst)/float(n)
+    return [ lst[int(round(division * i)): int(round(division * (i + 1)))] for i in xrange(n) ]
+
+def combine_list_of_dicts(list_of_dicts):
+    '''
+    Given a list of dicts, returns a single dict such that (key,value) pairs from each original dict exists in the
+    new single dict
+    Inputs
+    - list_of_dicts: a list of dicts
+    Outputs
+    - combined_dict 
+    '''
+    combined_dict = list_of_dicts[0]
+    for i in range(1,len(list_of_dicts)):
+        combined_dict.update( list_of_dicts[i] )
+    return combined_dict
+
 def unit_tests():
     variants = {}
     variants['sra_1'] = {'homozygous':['a','b'],'heterozygous':['c','e']}
     variants['sra_2'] = {'homozygous':['a','c','d']}
     variants['sra_3'] = {'heterozygous':['b','d','e']}
     matrix = create_variant_matrix(variants)
+    print(matrix)
     for variant_1 in matrix:
         for variant_2 in matrix[variant_1]:
             left_hand_side = matrix[variant_1][variant_2]
@@ -249,8 +278,8 @@ if __name__ == "__main__":
                      + "             using a heuristic."
     usage_message = "Usage: %s\n[-h (help and usage)]\n[-m <directory containing .mbo files>]\n" % (sys.argv[0]) \
                       + "[-v <path to variant info file>]\n[-f <path to the reference FASTA file>]\n"\
-                      + "[-o <output path for TSV file>]\n[-t <unit tests>]"
-    options = "hm:v:f:o:t"
+                      + "[-o <output path for TSV file>]\n[-p <num of threads>]\n[-t <unit tests>]"
+    options = "htm:v:f:o:p:"
 
     try:
         opts,args = getopt.getopt(sys.argv[1:],options)
@@ -267,6 +296,7 @@ if __name__ == "__main__":
     var_info_path = None
     output_path = None
     fasta_path = None
+    threads = 1
     
     for opt, arg in opts:
         if opt == '-h':
@@ -281,6 +311,8 @@ if __name__ == "__main__":
             output_path = arg
         elif opt == '-f':
             fasta_path = arg
+        elif opt == '-p':
+            threads = arg
         elif opt == '-t':
             unit_tests()
             sys.exit(0)
@@ -303,10 +335,19 @@ if __name__ == "__main__":
         print(usage_message)
         sys.exit(1)
 
+    var_info = get_var_info(var_info_path)
     paths = get_mbo_paths(mbo_directory)
     accession_map = get_accession_map(fasta_path)
     sra_alignments = get_sra_alignments(paths,accession_map)
-    var_info = get_var_info(var_info_path)
-    variants = get_sra_variants(sra_alignments,var_info)
-    create_tsv(variants,output_path)
-    matrix = create_variant_matrix(variants)
+    sra_keys = sra_alignments.keys()
+    threads = min( threads, len(sra_keys) )
+    keys_partitions = partition(sra_keys, threads)
+    # alignments, info and key partitions
+    alignments_and_info_part = [{'alignments':sra_alignments,'keys':keys,'info':var_info} for keys in keys_partitions]
+    # Call variants concurrently using multiprocessing
+    with Pool(threads) as pool:
+        variants_pool = pool.map(call_sra_variants,alignments_and_info_part)
+    # Combine all the variants that were called
+    called_variants = combine_list_of_dicts(variants_pool)
+    create_tsv(called_variants,output_path)
+    matrix = create_variant_matrix(called_variants)
