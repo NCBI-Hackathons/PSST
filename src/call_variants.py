@@ -6,6 +6,7 @@ import sys
 import os
 from itertools import combinations
 from multiprocessing.pool import Pool
+from contextlib import closing
 # Project-specific packages
 from queries_with_ref_bases import query_contains_ref_bases
 
@@ -345,8 +346,9 @@ if __name__ == "__main__":
     # alignments, info and key partitions
     alignments_and_info_part = [{'alignments':sra_alignments,'keys':keys,'info':var_info} for keys in keys_partitions]
     # Call variants concurrently using multiprocessing
-    with Pool(threads) as pool:
+    with closing(Pool(processes=threads)) as pool:
         variants_pool = pool.map(call_sra_variants,alignments_and_info_part)
+	pool.terminate()
     # Combine all the variants that were called
     called_variants = combine_list_of_dicts(variants_pool)
     create_tsv(called_variants,output_path)
