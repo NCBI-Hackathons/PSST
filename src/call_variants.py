@@ -84,11 +84,7 @@ def get_sra_alignments(paths,accession_map):
 
 def get_var_info(path):
     '''
-<<<<<<< HEAD
-    Retrieves the flanking sequence lengths for the SNP sequences           
-=======
     Retrieves the flanking sequence lengths for the SNP sequences            
->>>>>>> develop
     Inputs
     - path: path to the file that contains the flanking sequence lengths
     Outputs
@@ -136,7 +132,6 @@ def call_variants(var_freq):
 def get_sra_variants(sra_alignments,var_info):
     '''
     For all SRA accession, determines which variants exist in the SRA dataset    
->>>>>>> develop
     Inputs
     - sra_alignments: dict where the keys are SRA accessions and the values are lists of alignment dicts
     - var_info: dict where the keys are variant accessions and the values are information concerning the variants

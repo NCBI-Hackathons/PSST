@@ -1,0 +1,11 @@
+Description: Given a directory with Magic-BLAST output files where each output file
+             contains the alignment between an SRA dataset and known variants in a human
+             genome, this script determines which variants each SRA dataset contains
+             using a heuristic.
+Usage: call_variants.py
+[-h (help and usage)]
+[-m <directory containing .mbo files>]
+[-v <path to variant info file>]
+[-f <path to the reference FASTA file>]
+[-o <output path for TSV file>]
+[-t <unit tests>]
