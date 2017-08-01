@@ -132,7 +132,7 @@ def call_variants(var_freq):
             pass
     return variants
 
-def call_sra_variants(alignments_and_info)
+def call_sra_variants(alignments_and_info):
     '''
     For all SRA accession, determines which variants exist in the SRA dataset    
     Inputs
