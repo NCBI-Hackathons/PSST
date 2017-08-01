@@ -113,7 +113,8 @@ def call_variants(var_freq):
     - var_freq: a dict where the keys are SNP accessions and the values are dicts which contain the frequency of
             reads that do and reads that do not contain the SNP
     Outputs
-    - variants: a list which contains the SNP accessions of those SNPs which exist in the SRA dataset
+    - variants: dict where the keys are SRA accessions and the value is another dict that contains the homozgyous and 
+                heterozygous variants in separate lists 
     '''
     variants = {'heterozygous':[],'homozygous':[]}
     for var_acc in var_freq:
@@ -137,8 +138,8 @@ def get_sra_variants(sra_alignments,var_info):
     - sra_alignments: dict where the keys are SRA accessions and the values are lists of alignment dicts
     - var_info: dict where the keys are variant accessions and the values are information concerning the variants
     Outputs
-    - variants: dict where the keys are the SRA accessions and the values are lists which contain the accessions
-            of variants which exist in the SRA datasets
+    - variants: dict where the keys are SRA accessions and the value is another dict that contains the homozgyous and 
+                heterozygous variants in separate lists 
     '''
     variants = {}
     for sra_acc in sra_alignments:
@@ -164,8 +165,8 @@ def create_tsv(variants,output_path):
     '''
     Creates a TSV file containing the set of variants each SRA dataset contains.
     Inputs
-    - variants: dict where the keys are the SRA accessions and the values are lists which contain the accessions
-            of variants which exist in the SRA datasets
+    - variants: dict where the keys are SRA accessions and the value is another dict that contains the homozgyous and 
+                heterozygous variants in separate lists 
     - output_path: path to where to construct the output file
     '''
     with open(output_path,'w') as tsv:
@@ -190,22 +191,27 @@ def create_variant_matrix(variants):
     2. An edge (line) connects two vertices if and only if there exists an SRA dataset that contains both of the
        corresponding variants
     The matrix is represented by a dictionary of dictionaries. To save memory, we do not store 0 entries or variants
-    without any connecting edges. 
+    without any incident edges. 
     Inputs
-    - variants: dict where the keys are SRA accessions and the values are lists which contain the accessions of the
-                variants which exist in the SRA dataset
+    - variants: dict where the keys are SRA accessions and the value is another dict that contains the homozgyous and 
+                heterozygous variants in separate lists 
     Outputs
-    - matrix: a dict which, for any two variants (keys) variant_1 and variant_2, satisfies the following -
+    - matrix: a dict which, for any two keys (variants) variant_1 and variant_2, satisfies the following -
               1. type(matrix[variant_1]) is DictType
               2. type(matrix[variant_1][variant_2]) is IntType and matrix[variant_1][variant_2] >= 1
               3. matrix[variant_1][variant_2] == matrix[variant_2][variant_1] 
-              all of which holds if variant_1 and variant_2 exist in the dictionaries as keys
+              all of which holds if and only if variant_1 and variant_2 exist in the dictionaries as keys
     '''
     matrix = {}
     for sra_acc in variants:
         sra_variants = variants[sra_acc]
+        all_variants = []
+        if 'homozygous' in sra_variants:
+            all_variants += sra_variants['homozygous']
+        if 'heterozygous' in sra_variants:
+            all_variants += sra_variants['heterozygous']
         # Get all of the unique 2-combinations of the variants 
-        two_combinations = list( combinations(sra_variants,2) )
+        two_combinations = list( combinations(all_variants,2) )
         for pair in two_combinations:
             variant_1 = pair[0]
             variant_2 = pair[1] 
@@ -223,9 +229,9 @@ def create_variant_matrix(variants):
 
 def unit_tests():
     variants = {}
-    variants['sra_1'] = ['a','b','c','e']
-    variants['sra_2'] = ['a','c','d']
-    variants['sra_3'] = ['b','d','e']
+    variants['sra_1'] = {'homozygous':['a','b'],'heterozygous':['c','e']}
+    variants['sra_2'] = {'homozygous':['a','c','d']}
+    variants['sra_3'] = {'heterozygous':['b','d','e']}
     matrix = create_variant_matrix(variants)
     for variant_1 in matrix:
         for variant_2 in matrix[variant_1]:
