@@ -337,19 +337,27 @@ if __name__ == "__main__":
         sys.exit(1)
 
     var_info = get_var_info(var_info_path)
-    paths = get_mbo_paths(mbo_directory)
     accession_map = get_accession_map(fasta_path)
-    sra_alignments = get_sra_alignments(paths,accession_map)
+    paths = get_mbo_paths(mbo_directory)
+
+    # Retrieve the alignments concurrently
+    get_alignments_threads = min(threads,len(paths))
+    paths_partitions = partition( paths, get_alignments_threads )
+    with closing(Pool(processes=get_alignments_threads)) as pool:
+        sra_alignments_pool = pool.map(get_sra_alignments,paths_partitions)
+    pool.terminate()
+    sra_alignments = combine_list_of_dicts(sra_alignments_pool) 
+
+    # Call variants concurrently
     sra_keys = sra_alignments.keys()
-    threads = min( threads, len(sra_keys) )
-    keys_partitions = partition(sra_keys, threads)
+    variant_call_threads = min( threads, len(sra_keys) )
+    keys_partitions = partition(sra_keys, variant_call_threads)
     # alignments, info and key partitions
     alignments_and_info_part = [{'alignments':sra_alignments,'keys':keys,'info':var_info} for keys in keys_partitions]
-    # Call variants concurrently using multiprocessing
-    with closing(Pool(processes=threads)) as pool:
+    with closing(Pool(processes=variant_call_threads)) as pool:
         variants_pool = pool.map(call_sra_variants,alignments_and_info_part)
 	pool.terminate()
-    # Combine all the variants that were called
     called_variants = combine_list_of_dicts(variants_pool)
+
     create_tsv(called_variants,output_path)
     matrix = create_variant_matrix(called_variants)
