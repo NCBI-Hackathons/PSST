@@ -51,18 +51,23 @@ def get_mbo_paths(directory):
             paths[accession] = path
     return paths
 
-def get_sra_alignments(paths,accession_map):
+def get_sra_alignments(map_paths_and_partition):
     '''
     Given a list of paths as described in the function get_mbo_paths, retrieves the BTOP string for each
     alignment.
     Inputs
-    - paths: a list of pairs where the first entry of the pair is the accession and the second is the path
-    - (dict) accession_map: the map between integers and accessions
+    - map_paths_and_partition: a dict which contains the following:
+        - partition: the list of paths to .mbo files to read
+        - paths: a list of pairs where the first entry of the pair is the accession and the second is the path
+        - (dict) accession_map: the map between integers and accessions
     Outputs
     - a dictionary where keys are SRA accessions and the values are alignment dictionaries
     '''
+    accession_map = map_paths_and_partition['map']
+    paths = map_paths_and_partition['paths']
+    partition = map_paths_and_partition['partition']
     sra_alignments = {}
-    for accession in paths:
+    for accession in partition:
         path = paths[accession]
         alignments = []    
         with open(path,'r') as mbo:
@@ -341,10 +346,12 @@ if __name__ == "__main__":
     paths = get_mbo_paths(mbo_directory)
 
     # Retrieve the alignments concurrently
-    get_alignments_threads = min(threads,len(paths))
-    paths_partitions = partition( paths, get_alignments_threads )
+    get_alignments_threads = min(threads,len(paths.keys()))
+    paths_partitions = partition( paths.keys(), get_alignments_threads )
+    map_paths_and_partitions = [{'map':accession_map,'paths':paths,'partition':partition} \
+                                for partition in paths_partitions]
     with closing(Pool(processes=get_alignments_threads)) as pool:
-        sra_alignments_pool = pool.map(get_sra_alignments,paths_partitions)
+        sra_alignments_pool = pool.map(get_sra_alignments,map_paths_and_partitions)
     pool.terminate()
     sra_alignments = combine_list_of_dicts(sra_alignments_pool) 
 
