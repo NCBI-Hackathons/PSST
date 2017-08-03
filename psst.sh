@@ -54,7 +54,7 @@ ${SRC}/magicblast.sh ${SRA_ACC} snps_flanks ${MBO_DIR} ${THREADS} ${PROCS}
 
 ## Call variants in the SRA datasets
 echo "Calling SNPs..."
-TSV=${DIR}/${PHENOTYPE}.tsv
+TSV=${DIR}/results.tsv
 declare -i COMBINED_PROCS
 COMBINED_PROCS=${THREADS}*${PROCS}
 ${SRC}/call_variants.py -m ${MBO_DIR} -v ${SNP_INFO} -f ${SNP_FASTA} -p ${COMBINED_PROCS} -o ${TSV}
