@@ -361,7 +361,7 @@ if __name__ == "__main__":
     keys_partitions = partition(sra_keys, variant_call_threads)
     # alignments, info and key partitions
     alignments_and_info_part = [{'alignments':sra_alignments,'keys':keys,'info':var_info} for keys in keys_partitions]
-    pool = Pool(processes=variant_call_threads))
+    pool = Pool(processes=variant_call_threads)
     variants_pool = pool.map(call_sra_variants,alignments_and_info_part)
 	pool.join()
     called_variants = combine_list_of_dicts(variants_pool)
