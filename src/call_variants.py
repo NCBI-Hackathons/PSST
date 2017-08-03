@@ -350,9 +350,9 @@ if __name__ == "__main__":
     paths_partitions = partition( paths.keys(), get_alignments_threads )
     map_paths_and_partitions = [{'map':accession_map,'paths':paths,'partition':partition} \
                                 for partition in paths_partitions]
-    with closing(Pool(processes=get_alignments_threads)) as pool:
-        sra_alignments_pool = pool.map(get_sra_alignments,map_paths_and_partitions)
-    pool.terminate()
+    pool = Pool(processes=get_alignments_threads)
+    sra_alignments_pool = pool.map(get_sra_alignments,map_paths_and_partitions)
+    pool.join()
     sra_alignments = combine_list_of_dicts(sra_alignments_pool) 
 
     # Call variants concurrently
@@ -361,9 +361,9 @@ if __name__ == "__main__":
     keys_partitions = partition(sra_keys, variant_call_threads)
     # alignments, info and key partitions
     alignments_and_info_part = [{'alignments':sra_alignments,'keys':keys,'info':var_info} for keys in keys_partitions]
-    with closing(Pool(processes=variant_call_threads)) as pool:
-        variants_pool = pool.map(call_sra_variants,alignments_and_info_part)
-	pool.terminate()
+    pool = Pool(processes=variant_call_threads))
+    variants_pool = pool.map(call_sra_variants,alignments_and_info_part)
+	pool.join()
     called_variants = combine_list_of_dicts(variants_pool)
 
     create_tsv(called_variants,output_path)
