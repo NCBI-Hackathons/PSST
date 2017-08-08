@@ -5,8 +5,7 @@ import getopt
 import sys
 import os
 from itertools import combinations
-from multiprocessing.pool import Pool
-from contextlib import closing
+from multiprocessing.dummy import Pool
 # Project-specific packages
 from queries_with_ref_bases import query_contains_ref_bases
 
