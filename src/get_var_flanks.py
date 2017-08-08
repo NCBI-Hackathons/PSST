@@ -4,6 +4,14 @@ import sys
 import getopt
 
 def get_var_flanking_sequences(accessions,email):
+    '''
+    Retrieves the flanking sequences of the inputted variant accessions.
+    Inputs
+    - accessions: list of strings, which are the accessions
+    - email: string, which is the email address to give to Entrez
+    Outputs
+    - flanking_sequences: dictionary where the keys are variant accessions and the values are flanking sequences
+    '''
     flanking_sequences = {}
     Entrez.email = email
     for var_id in accessions:
