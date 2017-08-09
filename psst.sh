@@ -6,6 +6,7 @@
 set -e
 
 if [ "$#" -ne 4 ]; then
+    echo "Polygenic SNP Search Tool Version 1.0"
 	echo "Description: Given a disease/phenotype, this script retrieves all related variant and SRA accession"
 	echo "             numbers and determines the set of variants that occur in each SRA dataset."
 	BASENAME=`basename "$0"`

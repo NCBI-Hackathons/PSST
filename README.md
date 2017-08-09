@@ -1,5 +1,5 @@
 # PSST
-Polygenic SNP Search Tool
+Polygenic SNP Search Tool Version 1.0
 
 ## Graphical Overview
 
