@@ -149,6 +149,9 @@ def call_sra_variants(alignments_and_info):
     - variants: dict where the keys are SRA accessions and the value is another dict that contains the homozgyous and 
                 heterozygous variants in separate lists 
     '''
+    sra_alignments = alignments_and_info['alignments']
+    var_info = alignments_and_info['alignments']
+    keys = alignments_and_info['keys']
     variants = {}
     for sra_acc in keys:
         alignments = sra_alignments[sra_acc]
@@ -362,7 +365,7 @@ if __name__ == "__main__":
     alignments_and_info_part = [{'alignments':sra_alignments,'keys':keys,'info':var_info} for keys in keys_partitions]
     pool = Pool(processes=variant_call_threads)
     variants_pool = pool.map(call_sra_variants,alignments_and_info_part)
-	pool.join()
+    pool.join()
     called_variants = combine_list_of_dicts(variants_pool)
 
     create_tsv(called_variants,output_path)
