@@ -31,6 +31,10 @@ The `psst.sh` subpipeline is as follows:
 
 ## Disease Clustering:
 
-Clustering disease types through the ClinVar database in various categories such as assorted metabolic diseases and breast cancer to see the relationship among human variations and phenotypes. 
+Grouping different disease types through the ClinVar database in various categories such as assorted metabolic diseases and breast cancer to see the relationship among human variations and phenotypes. 
 
-1. Diseases were manually found using ClinVar dataset. Those that were not a match were eliminated. 
+1. Diseases were manually found using ClinVar dataset. 
+
+2. Performed an online search to crosscheck whether the diseases that came up were metabolic or cancer related. 
+
+3. Those that were not a match were eliminated while the correct diseases were moved into another file. 
