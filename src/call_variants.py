@@ -392,8 +392,5 @@ if __name__ == "__main__":
     alignments_and_info_part = [{'alignments':sra_alignments,'keys':keys,'info':var_info} for keys in keys_partitions]
     pool = Pool(processes=variant_call_threads)
     variants_pool = pool.map(call_sra_variants,alignments_and_info_part)
-	pool.join()
+    pool.join()
     called_variants = combine_list_of_dicts(variants_pool)
-
-    create_tsv(called_variants,output_path)
-    matrix = create_variant_matrix(called_variants)
