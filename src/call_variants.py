@@ -350,10 +350,11 @@ if __name__ == "__main__":
     # Retrieve the alignments concurrently
     get_alignments_threads = min(threads,len(paths.keys()))
     paths_partitions = partition( paths.keys(), get_alignments_threads )
-    map_paths_and_partitions = [{'map':accession_map,'paths':paths,'partition':partition} \
-                                for partition in paths_partitions]
+    map_paths_and_partitions = [{'map':accession_map,'paths':paths,'partition':path_partition} \
+                                for path_partition in paths_partitions]
     pool = Pool(processes=get_alignments_threads)
     sra_alignments_pool = pool.map(get_sra_alignments,map_paths_and_partitions)
+    pool.close()
     pool.join()
     sra_alignments = combine_list_of_dicts(sra_alignments_pool) 
 
@@ -365,6 +366,7 @@ if __name__ == "__main__":
     alignments_and_info_part = [{'alignments':sra_alignments,'keys':keys,'info':var_info} for keys in keys_partitions]
     pool = Pool(processes=variant_call_threads)
     variants_pool = pool.map(call_sra_variants,alignments_and_info_part)
+    pool.close()
     pool.join()
     called_variants = combine_list_of_dicts(variants_pool)
 
