@@ -28,6 +28,8 @@ The `psst.sh` subpipeline is as follows:
 
 4. From the Magic-BLAST alignments, determines which SNPs are contained in the SRA datasets using a statistical heuristic.
 
+See the file `breast-ovarian_cancer.tsv` for an example output file.
+
 ## Disease Clustering:
 
 Clustering disease types through the ClinVar database in various categories such as assorted metabolic diseases and breast cancer to see the relationship among human variations and phenotypes. 
