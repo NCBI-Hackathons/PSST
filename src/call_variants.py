@@ -5,6 +5,8 @@ import getopt
 import sys
 import os
 from itertools import combinations
+from multiprocessing.pool import Pool
+from contextlib import closing
 # Project-specific packages
 from queries_with_ref_bases import query_contains_ref_bases
 
@@ -48,18 +50,23 @@ def get_mbo_paths(directory):
             paths[accession] = path
     return paths
 
-def get_sra_alignments(paths,accession_map):
+def get_sra_alignments(map_paths_and_partition):
     '''
     Given a list of paths as described in the function get_mbo_paths, retrieves the BTOP string for each
     alignment.
     Inputs
-    - paths: a list of pairs where the first entry of the pair is the accession and the second is the path
-    - (dict) accession_map: the map between integers and accessions
+    - map_paths_and_partition: a dict which contains the following:
+        - partition: the list of paths to .mbo files to read
+        - paths: a list of pairs where the first entry of the pair is the accession and the second is the path
+        - (dict) accession_map: the map between integers and accessions
     Outputs
     - a dictionary where keys are SRA accessions and the values are alignment dictionaries
     '''
+    accession_map = map_paths_and_partition['map']
+    paths = map_paths_and_partition['paths']
+    partition = map_paths_and_partition['partition']
     sra_alignments = {}
-    for accession in paths:
+    for accession in partition:
         path = paths[accession]
         alignments = []    
         with open(path,'r') as mbo:
@@ -104,74 +111,76 @@ def get_var_info(path):
                 var_info[accession] = {'start':start,'stop':stop,'length':length}
     return var_info
 
-    def call_variants(var_freq):
-        '''
-        Determines which variants exist in a given SRA dataset given the number of reads that do and do not contain
-        the var
-        Inputs
-        - var_freq: a dict where the keys are SNP accessions and the values are dicts which contain the frequency of
-                reads that do and reads that do not contain the SNP
-        Outputs
-        - variants: a list which contains the SNP accessions of those SNPs which exist in the SRA dataset
-        '''
-        variants = {'heterozygous':[],'homozygous':[]}
-        for var_acc in var_freq:
-            frequencies = var_freq[var_acc]
-            true = frequencies['true']
-            false = frequencies['false']
-            try:
-                percentage = true/(true+false)
-                if percentage > 0.8: # For now, we use this simple heuristic.
-                    variants['homozygous'].append(var_acc)
-                elif percentage > 0.3:
-                    variants['heterozygous'].append(var_acc)
-                    
-                def display_variants():
-                    '''
-                    Displays related variants into graph
-                    by grouping variants into two distinct categories
-                    homozygous and heterozygous
-                    
-                    Outputs
-                    - Graphed nodes connected by edges
-                    for similar homozygous and heterozygous
-                    variants
-                    
-                    '''
-                    if var_acc in variants['homozygous']:
-                        G = nx.Graph()
-                        G.add_edge('{}'.format(var_acc),'{}'.format(var_acc))
-                        nx.draw(G, with_labels=True)
-                        plt.draw()
-                        plt.show()
-                    
-                    if var_acc in variants['heterozygous']:
-                        G = nx.Graph()
-                        G.add_edge('{}'.format(var_acc),'{}'.format(var_acc))
-                        nx.draw(G, with_labels=True)
-                        plt.draw()
-                        plt.show()
+def call_variants(var_freq):
+    '''
+    Determines which variants exist in a given SRA dataset given the number of reads that do and do not contain
+    the var
+    Inputs
+    - var_freq: a dict where the keys are SNP accessions and the values are dicts which contain the frequency of
+            reads that do and reads that do not contain the SNP
+    Outputs
+    - variants: dict where the keys are SRA accessions and the value is another dict that contains the homozgyous and 
+                heterozygous variants in separate lists 
+    '''
+    variants = {'heterozygous':[],'homozygous':[]}
+    for var_acc in var_freq:
+        frequencies = var_freq[var_acc]
+        true = frequencies['true']
+        false = frequencies['false']
+        try:
+            percentage = true/(true+false)
+            if percentage > 0.8: # For now, we use this simple heuristic.
+                variants['homozygous'].append(var_acc)
+            elif percentage > 0.3:
+                variants['heterozygous'].append(var_acc)
+            
+            def display_variants():
+                '''
+                Displays related variants into graph
+                by grouping variants into two distinct categories
+                homozygous and heterozygous
+      
+                Outputs
+                - Graphed nodes connected by edges
+                for similar homozygous and heterozygous
+                variants
+                '''
+                if var_acc in variants['homozygous']:
+                    G = nx.Graph()
+                    G.add_edge('{}'.format(var_acc),'{}'.format(var_acc))
+                    nx.draw(G, with_labels=True)
+                    plt.draw()
+                    plt.show()
+                 
+                if var_acc in variants['heterozygous']:
+                    G = nx.Graph()
+                    G.add_edge('{}'.format(var_acc),'{}'.format(var_acc))
+                    nx.draw(G, with_labels=True)
+                    plt.draw()
+                    plt.show()
 
-                    else:
-                        "No variant found"
+                else:
+                    "No variant found"
+          
                 display_variants()
+        except ZeroDivisionError: # We ignore division errors because they correspond to no mapped reads
+            pass
+    return variants
 
-            except ZeroDivisionError: # We ignore division errors because they correspond to no mapped reads
-                pass
-        return variants
-
-def get_sra_variants(sra_alignments,var_info):
+def call_sra_variants(alignments_and_info):
     '''
     For all SRA accession, determines which variants exist in the SRA dataset    
     Inputs
-    - sra_alignments: dict where the keys are SRA accessions and the values are lists of alignment dicts
-    - var_info: dict where the keys are variant accessions and the values are information concerning the variants
+    - alignments_and_info: a dict which contains
+        - sra_alignments: dict where the keys are SRA accessions and the values are lists of alignment dicts
+        - var_info: dict where the keys are variant accessions and the values are information concerning the variants
+        - keys: list which contains the keys of the SRA accessions to analyze
     Outputs
-    - variants: dict where the keys are the SRA accessions and the values are lists which contain the accessions
-            of variants which exist in the SRA datasets
+    - variants: dict where the keys are SRA accessions and the value is another dict that contains the homozgyous and 
+                heterozygous variants in separate lists 
     '''
     variants = {}
-    for sra_acc in sra_alignments:
+    for sra_acc in keys:
         alignments = sra_alignments[sra_acc]
         var_freq = {}
         for alignment in alignments:
@@ -194,8 +203,8 @@ def create_tsv(variants,output_path):
     '''
     Creates a TSV file containing the set of variants each SRA dataset contains.
     Inputs
-    - variants: dict where the keys are the SRA accessions and the values are lists which contain the accessions
-            of variants which exist in the SRA datasets
+    - variants: dict where the keys are SRA accessions and the value is another dict that contains the homozgyous and 
+                heterozygous variants in separate lists 
     - output_path: path to where to construct the output file
     '''
     with open(output_path,'w') as tsv:
@@ -220,22 +229,27 @@ def create_variant_matrix(variants):
     2. An edge (line) connects two vertices if and only if there exists an SRA dataset that contains both of the
        corresponding variants
     The matrix is represented by a dictionary of dictionaries. To save memory, we do not store 0 entries or variants
-    without any connecting edges. 
+    without any incident edges. 
     Inputs
-    - variants: dict where the keys are SRA accessions and the values are lists which contain the accessions of the
-                variants which exist in the SRA dataset
+    - variants: dict where the keys are SRA accessions and the value is another dict that contains the homozgyous and 
+                heterozygous variants in separate lists 
     Outputs
-    - matrix: a dict which, for any two variants (keys) variant_1 and variant_2, satisfies the following -
+    - matrix: a dict which, for any two keys (variants) variant_1 and variant_2, satisfies the following -
               1. type(matrix[variant_1]) is DictType
               2. type(matrix[variant_1][variant_2]) is IntType and matrix[variant_1][variant_2] >= 1
               3. matrix[variant_1][variant_2] == matrix[variant_2][variant_1] 
-              all of which holds if variant_1 and variant_2 exist in the dictionaries as keys
+              all of which holds if and only if variant_1 and variant_2 exist in the dictionaries as keys
     '''
     matrix = {}
     for sra_acc in variants:
         sra_variants = variants[sra_acc]
+        all_variants = []
+        if 'homozygous' in sra_variants:
+            all_variants += sra_variants['homozygous']
+        if 'heterozygous' in sra_variants:
+            all_variants += sra_variants['heterozygous']
         # Get all of the unique 2-combinations of the variants 
-        two_combinations = list( combinations(sra_variants,2) )
+        two_combinations = list( combinations(all_variants,2) )
         for pair in two_combinations:
             variant_1 = pair[0]
             variant_2 = pair[1] 
@@ -251,12 +265,38 @@ def create_variant_matrix(variants):
             matrix[variant_2][variant_1] = matrix[variant_1][variant_2]
     return matrix
 
+def partition(lst,n):
+    '''
+    Partitions a list into n lists
+    Inputs
+    - (list) lst
+    Outputs
+    - partitioned_lists: a list of lists 
+    '''
+    division = len(lst)/float(n)
+    return [ lst[int(round(division * i)): int(round(division * (i + 1)))] for i in xrange(n) ]
+
+def combine_list_of_dicts(list_of_dicts):
+    '''
+    Given a list of dicts, returns a single dict such that (key,value) pairs from each original dict exists in the
+    new single dict
+    Inputs
+    - list_of_dicts: a list of dicts
+    Outputs
+    - combined_dict 
+    '''
+    combined_dict = list_of_dicts[0]
+    for i in range(1,len(list_of_dicts)):
+        combined_dict.update( list_of_dicts[i] )
+    return combined_dict
+
 def unit_tests():
     variants = {}
-    variants['sra_1'] = ['a','b','c','e']
-    variants['sra_2'] = ['a','c','d']
-    variants['sra_3'] = ['b','d','e']
+    variants['sra_1'] = {'homozygous':['a','b'],'heterozygous':['c','e']}
+    variants['sra_2'] = {'homozygous':['a','c','d']}
+    variants['sra_3'] = {'heterozygous':['b','d','e']}
     matrix = create_variant_matrix(variants)
+    print(matrix)
     for variant_1 in matrix:
         for variant_2 in matrix[variant_1]:
             left_hand_side = matrix[variant_1][variant_2]
@@ -273,8 +313,9 @@ if __name__ == "__main__":
                      + "             using a heuristic."
     usage_message = "Usage: %s\n[-h (help and usage)]\n[-m <directory containing .mbo files>]\n" % (sys.argv[0]) \
                       + "[-v <path to variant info file>]\n[-f <path to the reference FASTA file>]\n"\
-                      + "[-o <output path for TSV file>]\n[-t <unit tests>]"
-    options = "hm:v:f:o:t"
+                      + "[-o <output path for TSV file>]\n[-p <num of threads>]\n[-t <unit tests>]"
+    options = "htm:v:f:o:p:"
+
     try:
         opts,args = getopt.getopt(sys.argv[1:],options)
     except getopt.GetoptError:
@@ -290,6 +331,7 @@ if __name__ == "__main__":
     var_info_path = None
     output_path = None
     fasta_path = None
+    threads = 1
     
     for opt, arg in opts:
         if opt == '-h':
@@ -304,6 +346,8 @@ if __name__ == "__main__":
             output_path = arg
         elif opt == '-f':
             fasta_path = arg
+        elif opt == '-p':
+            threads = arg
         elif opt == '-t':
             unit_tests()
             sys.exit(0)
@@ -326,12 +370,30 @@ if __name__ == "__main__":
         print(usage_message)
         sys.exit(1)
 
-    paths = get_mbo_paths(mbo_directory)
-    accession_map = get_accession_map(fasta_path)
-    sra_alignments = get_sra_alignments(paths,accession_map)
     var_info = get_var_info(var_info_path)
-    variants = get_sra_variants(sra_alignments,var_info)
-    create_tsv(variants,output_path)
-    matrix = create_variant_matrix(variants)
+    accession_map = get_accession_map(fasta_path)
+    paths = get_mbo_paths(mbo_directory)
 
-print(call_variants({ 'rs0001' : { 'true': 10, 'false': 20 }, 'rs2001' : {'true': 1000, 'false': 17}, 'rs2071' : {'true': 1000, 'false': 17},  'rs4300' : { 'true': 10, 'false': 20 } }))
+    # Retrieve the alignments concurrently
+    get_alignments_threads = min(threads,len(paths.keys()))
+    paths_partitions = partition( paths.keys(), get_alignments_threads )
+    map_paths_and_partitions = [{'map':accession_map,'paths':paths,'partition':partition} \
+                                for partition in paths_partitions]
+    pool = Pool(processes=get_alignments_threads)
+    sra_alignments_pool = pool.map(get_sra_alignments,map_paths_and_partitions)
+    pool.join()
+    sra_alignments = combine_list_of_dicts(sra_alignments_pool) 
+
+    # Call variants concurrently
+    sra_keys = sra_alignments.keys()
+    variant_call_threads = min( threads, len(sra_keys) )
+    keys_partitions = partition(sra_keys, variant_call_threads)
+    # alignments, info and key partitions
+    alignments_and_info_part = [{'alignments':sra_alignments,'keys':keys,'info':var_info} for keys in keys_partitions]
+    pool = Pool(processes=variant_call_threads)
+    variants_pool = pool.map(call_sra_variants,alignments_and_info_part)
+	pool.join()
+    called_variants = combine_list_of_dicts(variants_pool)
+
+    create_tsv(called_variants,output_path)
+    matrix = create_variant_matrix(called_variants)
