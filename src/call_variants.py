@@ -104,30 +104,61 @@ def get_var_info(path):
                 var_info[accession] = {'start':start,'stop':stop,'length':length}
     return var_info
 
-def call_variants(var_freq):
-    '''
-    Determines which variants exist in a given SRA dataset given the number of reads that do and do not contain
-    the var
-    Inputs
-    - var_freq: a dict where the keys are SNP accessions and the values are dicts which contain the frequency of
-            reads that do and reads that do not contain the SNP
-    Outputs
-    - variants: a list which contains the SNP accessions of those SNPs which exist in the SRA dataset
-    '''
-    variants = {'heterozygous':[],'homozygous':[]}
-    for var_acc in var_freq:
-        frequencies = var_freq[var_acc]
-        true = frequencies['true']
-        false = frequencies['false']
-        try:
-            percentage = true/(true+false)
-            if percentage > 0.8: # For now, we use this simple heuristic.
-                variants['homozygous'].append(var_acc)
-            elif percentage > 0.3:
-                variants['heterozygous'].append(var_acc)
-        except ZeroDivisionError: # We ignore division errors because they correspond to no mapped reads
-            pass
-    return variants
+    def call_variants(var_freq):
+        '''
+        Determines which variants exist in a given SRA dataset given the number of reads that do and do not contain
+        the var
+        Inputs
+        - var_freq: a dict where the keys are SNP accessions and the values are dicts which contain the frequency of
+                reads that do and reads that do not contain the SNP
+        Outputs
+        - variants: a list which contains the SNP accessions of those SNPs which exist in the SRA dataset
+        '''
+        variants = {'heterozygous':[],'homozygous':[]}
+        for var_acc in var_freq:
+            frequencies = var_freq[var_acc]
+            true = frequencies['true']
+            false = frequencies['false']
+            try:
+                percentage = true/(true+false)
+                if percentage > 0.8: # For now, we use this simple heuristic.
+                    variants['homozygous'].append(var_acc)
+                elif percentage > 0.3:
+                    variants['heterozygous'].append(var_acc)
+                    
+                def display_variants():
+                    '''
+                    Displays related variants into graph
+                    by grouping variants into two distinct categories
+                    homozygous and heterozygous
+                    
+                    Outputs
+                    - Graphed nodes connected by edges
+                    for similar homozygous and heterozygous
+                    variants
+                    
+                    '''
+                    if var_acc in variants['homozygous']:
+                        G = nx.Graph()
+                        G.add_edge('{}'.format(var_acc),'{}'.format(var_acc))
+                        nx.draw(G, with_labels=True)
+                        plt.draw()
+                        plt.show()
+                    
+                    if var_acc in variants['heterozygous']:
+                        G = nx.Graph()
+                        G.add_edge('{}'.format(var_acc),'{}'.format(var_acc))
+                        nx.draw(G, with_labels=True)
+                        plt.draw()
+                        plt.show()
+
+                    else:
+                        "No variant found"
+                display_variants()
+
+            except ZeroDivisionError: # We ignore division errors because they correspond to no mapped reads
+                pass
+        return variants
 
 def get_sra_variants(sra_alignments,var_info):
     '''
@@ -302,3 +333,5 @@ if __name__ == "__main__":
     variants = get_sra_variants(sra_alignments,var_info)
     create_tsv(variants,output_path)
     matrix = create_variant_matrix(variants)
+
+print(call_variants({ 'rs0001' : { 'true': 10, 'false': 20 }, 'rs2001' : {'true': 1000, 'false': 17}, 'rs2071' : {'true': 1000, 'false': 17},  'rs4300' : { 'true': 10, 'false': 20 } }))
