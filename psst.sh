@@ -50,7 +50,7 @@ ${SRC}/makeblastdb.sh ${SNP_FASTA} ${DIR}
 echo "Aligning SRA datasets onto the SNPs..."
 MBO_DIR=${DIR}/mbo # We will store the .mbo files here
 mkdir -p ${MBO_DIR} # Create the directory if it doesn't exist yet
-${SRC}/magicblast.sh ${SRA_ACC} snps_flanks ${MBO_DIR} ${THREADS} ${PROCS}
+${SRC}/magicblast.sh ${SRA_ACC} snp_flanks ${MBO_DIR} ${THREADS} ${PROCS}
 
 ## Call variants in the SRA datasets
 echo "Calling SNPs..."
