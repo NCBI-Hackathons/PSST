@@ -125,7 +125,6 @@ def call_variants(var_freq):
                 heterozygous variants in separate lists 
     '''
     variants = {'heterozygous':[],'homozygous':[]}
-    count = 0
     for var_acc in var_freq:
         frequencies = var_freq[var_acc]
         true = frequencies['true']
@@ -148,24 +147,21 @@ def call_variants(var_freq):
                 for similar homozygous and heterozygous
                 variants
                 '''
-                if count % 2 == 1 :
-                    if var_acc in variants['homozygous']:
-                        G = nx.Graph()
-                        G.add_edge('{}'.format(var_acc),'{}'.format(var_acc))
-                        nx.draw(G, with_labels=True)
-                        plt.draw()
-                        plt.show()
-                 
-                if count % 2 == 0:
-                    if var_acc in variants['heterozygous']:
-                        G = nx.Graph()
-                        G.add_edge('{}'.format(var_acc),'{}'.format(var_acc))
-                        nx.draw(G, with_labels=True)
-                        plt.draw()
-                        plt.show()
+                if var_acc in variants['homozygous']:
+                    G = nx.Graph()
+                    G.add_edge('{}'.format(var_acc),'{}'.format(var_acc))
+                    nx.draw(G, with_labels=True)
+                    plt.draw()
+                    plt.show()
+
+                if var_acc in variants['heterozygous']:
+                    G = nx.Graph()
+                    G.add_edge('{}'.format(var_acc),'{}'.format(var_acc))
+                    nx.draw(G, with_labels=True)
+                    plt.draw()
+                    plt.show()
                 else:
                     "No variant found"
-            count = count + 1 
             display_variants()
         except ZeroDivisionError: # We ignore division errors because they correspond to no mapped reads
             pass
