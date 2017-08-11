@@ -148,7 +148,7 @@ def call_variants(var_freq):
                 for similar homozygous and heterozygous
                 variants
                 '''
-                if count % 2 == 0 :
+                if count % 2 == 1 :
                     if var_acc in variants['homozygous']:
                         G = nx.Graph()
                         G.add_edge('{}'.format(var_acc),'{}'.format(var_acc))
@@ -156,7 +156,7 @@ def call_variants(var_freq):
                         plt.draw()
                         plt.show()
                  
-                if count % 2 != 0:
+                if count % 2 == 0:
                     if var_acc in variants['heterozygous']:
                         G = nx.Graph()
                         G.add_edge('{}'.format(var_acc),'{}'.format(var_acc))
