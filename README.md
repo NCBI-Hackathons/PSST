@@ -1,5 +1,5 @@
 # PSST
-Polygenic SNP Search Tool Version 1.0
+Polygenic SNP Search Tool Version 2.0
 
 ## Graphical Overview
 
@@ -15,11 +15,12 @@ The Polygenic SNP Search Tool is an open-source pipeline that **identifies multi
 
 ## Usage:
 
-The script `psst.sh` determines the set of SNPs that are contained in each SRA dataset associated with the given phenotype/disease. For example, to determine the set of SNPs associated with each SRA dataset related to breast-ovarian cancer, run the command `psst.sh breast-ovarian_cancer ${PWD}`. This script will then output a TSV file describing which SNPs are associated with the breast-ovarian cancer SRA datasets. 
+The main script `psst.sh` accepts as input a text file where each line corresponds to a unique SNP rs-accessions and either another text file containing unique SRA accessions or a FASTQ file.
+This script will then output a TSV file describing which SNPs are contained in the SRA datasets.
 
 The `psst.sh` subpipeline is as follows:
 
-1. Extracts flanking sequences for the phenotype associated SNP IDs and creates a FASTA file containing these flanking sequences. 
+1. Extracts flanking sequences for the SNP accessions and creates a FASTA file containing these flanking sequences. 
 
 2. Uses `makeblastdb` to generate a BLAST database for the SNP flanking sequences.
 
@@ -27,7 +28,7 @@ The `psst.sh` subpipeline is as follows:
 
 4. From the Magic-BLAST alignments, determines which SNPs are contained in the SRA datasets using a statistical heuristic.
 
-5. For each SRA dataset, outputs the set of IDs of the associated SNPs. 
+See the file `breast-ovarian_cancer.tsv` for an example output file.
 
 ## Disease Clustering:
 
