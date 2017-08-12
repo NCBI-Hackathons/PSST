@@ -4,7 +4,7 @@
 
 if [ "$#" -ne 5 ]; then
 	echo "Description: Given a file containing SRA accessions and a BLAST database, this script runs Magic-BLAST" 
-	echo "             on each SRA dataset."
+	echo "             on each SRA dataset. Assumes the BLASTDB is in the output directory."
 	BASENAME=`basename "$0"`
 	echo "Usage: ${BASENAME} [SRA accessions file] [BLAST DB name] [output dir] [threads] [max child procs]"
 	exit 0
@@ -16,6 +16,9 @@ DB_NAME=$2
 OUTPUT_DIR=$3
 THREADS=$4
 MAX_PROCS=$5
+
+# Sets the BLASTDB path to the output directory
+export BLASTDB=${OUTPUT_DIR}
 
 # This prevents ambiguous splicing from occuring in Magic-BLAST
 export MAPPER_NO_OVERLAPPED_HSP_MERGED=1
