@@ -18,11 +18,11 @@ The Polygenic SNP Search Tool is an open-source pipeline that **identifies multi
 The main script `psst.sh` accepts as input a text file where each line corresponds to a unique SNP rs-accessions and either another text file containing unique SRA accessions or a FASTQ file.
 This script will then output a TSV file describing which SNPs are contained in the SRA datasets.
 
-The `psst.sh` subpipeline is as follows:
+The PSST pipeline is as follows:
 
 1. Extracts flanking sequences for the SNP accessions and creates a FASTA file containing these flanking sequences. 
 
-2. Uses `makeblastdb` to generate a BLAST database for the SNP flanking sequences.
+2. Creates a BLAST database out of the SNP flanking sequences.
 
 3. Runs Magic-BLAST on each phenotype-associated SRA dataset and the SNP flanking sequence BLAST database.
 
