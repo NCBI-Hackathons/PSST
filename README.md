@@ -1,5 +1,5 @@
 # PSST
-Polygenic SNP Search Tool
+Polygenic SNP Search Tool Version 1.1
 
 ## Graphical Overview
 
@@ -27,6 +27,8 @@ The `psst.sh` subpipeline is as follows:
 3. Runs Magic-BLAST on each phenotype-associated SRA dataset and the SNP flanking sequence BLAST database.
 
 4. From the Magic-BLAST alignments, determines which SNPs are contained in the SRA datasets using a statistical heuristic.
+
+See the file `breast-ovarian_cancer.tsv` for an example output file.
 
 ## Disease Clustering:
 
