@@ -24,7 +24,7 @@ def find_var_info(sequences):
 		right_flank_length = len(sequence[right_bracket_index+1:])
 		length = len(minor_allele)
 		stop = length - right_flank_length
-		var_info[seq_name] = (start,stop,length)
+		var_info[seq_name] = {'start': start, 'stop': stop, 'length': length}
 	return var_info
 
 def unit_test():

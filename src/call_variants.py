@@ -150,7 +150,7 @@ def call_sra_variants(alignments_and_info):
                 heterozygous variants in separate lists 
     '''
     sra_alignments = alignments_and_info['alignments']
-    var_info = alignments_and_info['alignments']
+    var_info = alignments_and_info['info']
     keys = alignments_and_info['keys']
     variants = {}
     for sra_acc in keys:
