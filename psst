@@ -18,7 +18,8 @@ MINOR_VERSION = 1
 
 parser = argparse.ArgumentParser(description=
 '''
-Polygenic SNP Search Tool (PSST) Version %d.%d Copyright (C) 2017 NCBI
+Polygenic SNP Search Tool (PSST) Version %d.%d 
+Copyright (C) 2017 NCBI
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it under certain conditions.
 ''' % (MAJOR_VERSION, MINOR_VERSION), formatter_class=RawTextHelpFormatter)
