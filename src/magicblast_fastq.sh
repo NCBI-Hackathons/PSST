@@ -21,6 +21,9 @@ export BLASTDB=${OUTPUT_DIR}
 
 # This prevents ambiguous splicing from occuring in Magic-BLAST
 export MAPPER_NO_OVERLAPPED_HSP_MERGED=1
+
+MBO_DIR=${OUTPUT_DIR}/mbo
+
 BASENAME=`basename "${FASTQ}"`
-OUTPUT_FILE=${OUTPUT_DIR}/${BASENAME/.*/.mbo}
+OUTPUT_FILE=${MBO_DIR}/${BASENAME/.*/.mbo}
 magicblast -query ${FASTQ} -infmt fastq -db ${DB_NAME} -out ${OUTPUT_FILE} -outfmt tabular -parse_deflines T -num_threads ${THREADS}

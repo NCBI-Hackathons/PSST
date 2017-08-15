@@ -23,8 +23,11 @@ export BLASTDB=${OUTPUT_DIR}
 # This prevents ambiguous splicing from occuring in Magic-BLAST
 export MAPPER_NO_OVERLAPPED_HSP_MERGED=1
 
+# The directory to store the mbo files
+MBO_DIR=${OUTPUT_DIR}/mbo
+
 for ACC in $(cat ${SRA}); do
-	OUTPUT_FILE=${OUTPUT_DIR}/${ACC}.mbo
+	OUTPUT_FILE=${MBO_DIR}/${ACC}.mbo
 	magicblast -sra ${ACC} -db ${DB_NAME} -out ${OUTPUT_FILE} -outfmt tabular -parse_deflines T -num_threads ${THREADS} &
 	# Limit the number of child processes running so we don't overload the local computer
 	while [ $(jobs | wc -l) -ge "${MAX_PROCS}" ]; do sleep 1; done
