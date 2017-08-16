@@ -277,7 +277,6 @@ if __name__ == "__main__":
     mbo_directory = None
     var_info_path = None
     output_path = None
-    fasta_path = None
     threads = 1
     
     for opt, arg in opts:
@@ -291,8 +290,6 @@ if __name__ == "__main__":
             var_info_path = arg
         elif opt == '-o':
             output_path = arg
-        elif opt == '-f':
-            fasta_path = arg
         elif opt == '-p':
             threads = arg
         elif opt == '-t':
@@ -310,9 +307,6 @@ if __name__ == "__main__":
     if output_path == None:
         print("Error: please provide an output path for the TSV file.")
         opts_incomplete = True
-    if fasta_path == None:
-        print("Error: please provide the path to the FASTA file used as reference for makeblastdb")
-        opts_incomplete = True
     if opts_incomplete:
         print(usage_message)
         sys.exit(1)
@@ -323,9 +317,9 @@ if __name__ == "__main__":
     # Retrieve the alignments concurrently
     get_alignments_threads = min(threads,len(paths.keys()))
     paths_partitions = partition( paths.keys(), get_alignments_threads )
-    map_paths_and_partitions = [{'paths':paths,'partition':path_partition} for path_partition in paths_partitions]
+    paths_and_partitions = [{'paths':paths,'partition':path_partition} for path_partition in paths_partitions]
     pool = Pool(processes=get_alignments_threads)
-    sra_alignments_pool = pool.map(get_sra_alignments,map_paths_and_partitions)
+    sra_alignments_pool = pool.map(get_sra_alignments,paths_and_partitions)
     pool.close()
     pool.join()
     sra_alignments = combine_list_of_dicts(sra_alignments_pool) 
