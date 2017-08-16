@@ -22,4 +22,4 @@ FASTA_NAME=$( printf ${FASTA_BASE} | awk -F"." '{ print $1 }' )
 
 # Make the BLAST database in the given directory
 cd ${DIR}
-makeblastdb -dbtype nucl -in ${FASTA} -out ${FASTA_NAME}
+makeblastdb -dbtype nucl -parse_seqids -in ${FASTA} -out ${FASTA_NAME} 

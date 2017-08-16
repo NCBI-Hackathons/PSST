@@ -9,30 +9,6 @@ from multiprocessing.dummy import Pool
 # Project-specific packages
 from queries_with_ref_bases import query_contains_ref_bases
 
-def get_accession_map(fasta_path):
-    '''
-    Suppose in the FASTA file used as reference for makeblastdb, there are n sequences.
-    Magic-BLAST labels these sequences as the order in which they appear when outputting in tabulated format.
-    For example, suppose that the SNP rs0001 appears second from the top in the FASTA file.
-    Then Magic-BLAST assigns the label '1' to rs0001 whenever it appears in an alignment.
-    This function returns a dictionary that serves as a map from integers (in string datatype) to accessions
-    e.g. accession_map['1'] == rs0001 in our above example.
-    Inputs
-    - (str) fasta_path: path to the FASTA file used as reference for makeblastdb
-    Outputs
-    - (dict) accession_map: the map from integers to accessions
-    '''
-    accession_map = {}
-    with open(fasta_path,'r') as fasta:
-        id_number = 0
-        for line in fasta:
-            if line[0] == ">":
-                accession = line[1:].rstrip()
-                accession_map[str(id_number)] = accession
-                id_number += 1
-    return accession_map
-
-
 def get_mbo_paths(directory):
     '''
     Given a directory, retrieves the paths of all files within the directory whose extension is .mbo
@@ -58,11 +34,9 @@ def get_sra_alignments(map_paths_and_partition):
     - map_paths_and_partition: a dict which contains the following:
         - partition: the list of paths to .mbo files to read
         - paths: a list of pairs where the first entry of the pair is the accession and the second is the path
-        - (dict) accession_map: the map between integers and accessions
     Outputs
     - a dictionary where keys are SRA accessions and the values are alignment dictionaries
     '''
-    accession_map = map_paths_and_partition['map']
     paths = map_paths_and_partition['paths']
     partition = map_paths_and_partition['partition']
     sra_alignments = {}
@@ -75,7 +49,7 @@ def get_sra_alignments(map_paths_and_partition):
                 # Skip the line if it is commented, the number of fields isn't equal to 25 or
                 # the query read was not aligned
                 #if line[0] != "#" and len(tokens) == 25 and tokens[1] != "-":
-                var_acc = accession_map[ tokens[0] ]
+                var_acc = tokens[0]
                 ref_start = int(tokens[1])
                 ref_stop = int(tokens[2])
                 if ref_start > ref_stop:
@@ -344,14 +318,12 @@ if __name__ == "__main__":
         sys.exit(1)
 
     var_info = get_var_info(var_info_path)
-    accession_map = get_accession_map(fasta_path)
     paths = get_mbo_paths(mbo_directory)
 
     # Retrieve the alignments concurrently
     get_alignments_threads = min(threads,len(paths.keys()))
     paths_partitions = partition( paths.keys(), get_alignments_threads )
-    map_paths_and_partitions = [{'map':accession_map,'paths':paths,'partition':path_partition} \
-                                for path_partition in paths_partitions]
+    map_paths_and_partitions = [{'paths':paths,'partition':path_partition} for path_partition in paths_partitions]
     pool = Pool(processes=get_alignments_threads)
     sra_alignments_pool = pool.map(get_sra_alignments,map_paths_and_partitions)
     pool.close()
