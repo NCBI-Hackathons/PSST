@@ -74,18 +74,18 @@ def get_sra_alignments(map_paths_and_partition):
                 tokens = line.split()
                 # Skip the line if it is commented, the number of fields isn't equal to 25 or
                 # the query read was not aligned
-                if line[0] != "#" and len(tokens) == 25 and tokens[1] != "-":
-                    var_acc = accession_map[ tokens[1] ]
-                    ref_start = int(tokens[8])
-                    ref_stop = int(tokens[9])
-                    if ref_start > ref_stop:
-                        temp = ref_start
-                        ref_start = ref_stop
-                        ref_stop = temp
-                    btop = tokens[16]
-                    alignment = { 'var_acc': var_acc, 'ref_start': ref_start,\
+                #if line[0] != "#" and len(tokens) == 25 and tokens[1] != "-":
+                var_acc = accession_map[ tokens[0] ]
+                ref_start = int(tokens[1])
+                ref_stop = int(tokens[2])
+                if ref_start > ref_stop:
+                    temp = ref_start
+                    ref_start = ref_stop
+                    ref_stop = temp
+                btop = tokens[3]
+                alignment = { 'var_acc': var_acc, 'ref_start': ref_start,\
                               'ref_stop': ref_stop, 'btop': btop }
-                    alignments.append( alignment )
+                alignments.append( alignment )
         sra_alignments[accession] = alignments
     return sra_alignments
 

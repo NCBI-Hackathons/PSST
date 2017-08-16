@@ -26,4 +26,4 @@ MBO_DIR=${OUTPUT_DIR}/mbo
 
 BASENAME=`basename "${FASTQ}"`
 OUTPUT_FILE=${MBO_DIR}/${BASENAME/.*/.mbo}
-magicblast -query ${FASTQ} -infmt fastq -db ${DB_NAME} -out ${OUTPUT_FILE} -outfmt tabular -parse_deflines T -num_threads ${THREADS}
+magicblast -query ${FASTQ} -infmt fastq -db ${DB_NAME} -outfmt tabular -parse_deflines T -num_threads ${THREADS} | awk -F'\t' 'FNR > 3 { if ($2 != "-") { print $2,$9,$10,$17 } }' > ${OUTPUT_FILE}

@@ -28,7 +28,7 @@ MBO_DIR=${OUTPUT_DIR}/mbo
 
 for ACC in $(cat ${SRA}); do
 	OUTPUT_FILE=${MBO_DIR}/${ACC}.mbo
-	magicblast -sra ${ACC} -db ${DB_NAME} -out ${OUTPUT_FILE} -outfmt tabular -parse_deflines T -num_threads ${THREADS} &
+	magicblast -sra ${ACC} -db ${DB_NAME} -outfmt tabular -parse_deflines T -num_threads ${THREADS} | awk -F'\t' 'FNR > 3 { if ($2 != "-") { print $2,$9,$10,$17 } }' > ${OUTPUT_FILE} &
 	# Limit the number of child processes running so we don't overload the local computer
 	while [ $(jobs | wc -l) -ge "${MAX_PROCS}" ]; do sleep 1; done
 done
