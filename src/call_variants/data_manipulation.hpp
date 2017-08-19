@@ -5,12 +5,13 @@ std::vector<std::string> split(const std::string &str);
 
 struct Alignment
 {
+    std::string variant_acc;
     std::string btop;
-    std::string ref_start;
-    std::string ref_stop;
+    int64_t ref_start;
+    int64_t ref_stop;
 };
 
-struct FlankInfo
+struct VarInfo
 {
     int64_t start;
     int64_t stop;
