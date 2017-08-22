@@ -23,7 +23,7 @@ def find_var_info(sequences):
 
 		right_flank_length = len(sequence[right_bracket_index+1:])
 		length = len(minor_allele)
-		stop = length - right_flank_length
+		stop = length - right_flank_length - 1
 		var_info[seq_name] = (start,stop,length)
 	return var_info
 
