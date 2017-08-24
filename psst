@@ -14,9 +14,10 @@ description() {
 
 usage() { 
 	BASENAME=`basename "$0"`
-	printf "Usage: ${BASENAME} [-h description and usage] [-s SRA accessions] [-n SNP accessions]\n"
-    printf "               [-f FASTQ file] [-d working directory] [-e email for Entrez]\n"
-    printf "               [-t threads] [-p max number of concurrent Magic-BLAST calls]\n"
+	printf "Usage: ${BASENAME} [-h description and usage] [-s SRA accessions] [-n SNP accessions] "
+    printf "[-f FASTQ file] [-d working directory]\n"
+    printf "            [-e email for Entrez] [-t threads per Magic-BLAST call] "
+    printf "[-p max number of concurrent Magic-BLAST calls]\n"
     echo "Notes:"
     echo "'-h' is the only non-mandatory parameter."
     echo "Exactly one of '-s' or '-f' must be provided as an argument."
