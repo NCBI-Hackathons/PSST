@@ -90,6 +90,7 @@ if [ -z "${PROCS}" ]; then
 fi
 # Exit the script if the command line options are incomplete or incorrect
 if [ -n "${OPTS_INCOMPLETE}" ]; then
+    usage
     exit 1
 fi
 
