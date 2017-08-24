@@ -26,7 +26,7 @@ std::vector<std::string> get_btop_list(std::string btop)
     int num_base = 0;
     bool in_gap = false;
     bool prev_was_int = false;
-    for (int i = 0; i < btop.length(); i++) {
+    for (size_t i = 0; i < btop.length(); i++) {
         char current_char = btop[i];
         if (std::isalpha(current_char) or current_char == '-') {
             num_base ++;
@@ -54,7 +54,7 @@ std::string find_reference_alignment(std::vector<std::string> btop_list)
     std::string ref_alignment = "";
     std::string base; 
     bool gap = false;
-    for (int i = 0; i < btop_list.size(); i++) {
+    for (size_t i = 0; i < btop_list.size(); i++) {
         std::string op = btop_list.at(i);
         if (op.find("_") != std::string::npos) {
             gap = true;

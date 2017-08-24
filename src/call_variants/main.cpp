@@ -3,15 +3,23 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <cstdlib> // For std::exit
 #include <map>
-// For multithreading
+#include <cstdlib> // For std::exit
+#include <unistd.h> // For getopt
+#include <algorithm> // For std::remove
+// For multiprocessing
 #include <future>
 #include <thread>
 // Custom libraries
 #include "structs.hpp"
 #include "data_manipulation.hpp"
 #include "queries_with_ref_bases.hpp"
+#include "variant_calling.hpp"
+
+void remove_new_lines(std::string &str)
+{
+    str.erase( std::remove(str.begin(), str.end(), '\n'), str.end() );
+}
 
 std::vector<BlastOutput> get_mbo_paths(std::string mbo_list_path)
 /* Retrieves the paths to the MBO alignment files */
@@ -24,24 +32,24 @@ std::vector<BlastOutput> get_mbo_paths(std::string mbo_list_path)
     }
 
     std::string line;
-    std::vector<BlastOutput> mbo_paths;
+    std::vector<BlastOutput> blast_output_list;
 
     // Each line of the file corresponds to an line number
     while ( std::getline(mbo_list_file,line) ) {
         // Remove new lines from the line
-        line.erase( std::remove(line.begin(), line.end(), '\n'), line.end() );
+        remove_new_lines(line);
         // Split into tokens
         std::vector<std::string> tokens = split(line); 
         // The first token is the accession, the second is the MBO path
-        BlastOutput mbo_path;
-        mbo_path.accession = tokens.at(0);
-        mbo_path.path = tokens.at(1); 
+        BlastOutput blast_output;
+        blast_output.accession = tokens.at(0);
+        blast_output.path = tokens.at(1); 
         // Add it to the list
-        mbo_paths.push_back(mbo_path); 
+        blast_output_list.push_back(blast_output); 
     }
 
     mbo_list_file.close();
-    return mbo_paths
+    return blast_output_list;
 }
 
 std::map<std::string,VarBoundary> get_var_boundary_map(std::string var_boundary_path)
@@ -61,11 +69,11 @@ std::map<std::string,VarBoundary> get_var_boundary_map(std::string var_boundary_
     // Each line corresponds to the information for a single variant
     while ( std::getline(var_boundary_file,line) ) {
         // Remove new lines from the line
-        line.erase( std::remove(line.begin(), line.end(), '\n'), line.end() );
+        remove_new_lines(line);
         // Split into tokens
         std::vector<std::string> tokens = split(line);
         // Put the tokens into the variant info object
-        accession = tokens.at(0);
+        std::string accession = tokens.at(0);
         VarBoundary var_boundary;
         // Convert the strings into integers
         var_boundary.start = std::stoi( tokens.at(1) );
@@ -73,15 +81,15 @@ std::map<std::string,VarBoundary> get_var_boundary_map(std::string var_boundary_
         var_boundary_map[accession] = var_boundary;
     } 
 
-    var_inf_file.close();
+    var_boundary_file.close();
     return var_boundary_map;
 }
 
 SraAlignments get_sra_alignments(BlastOutput blast_output)
 /* Retrieves the Magic-BLAST alignments for a particular SRA dataset */
 {
-    accession = blast_output.accession
-    path = blast_output.path;
+    std::string accession = blast_output.accession;
+    std::string path = blast_output.path;
 
     std::ifstream mbo_file (path,std::ios::in);
     if ( not mbo_file.is_open() ) {
@@ -95,7 +103,7 @@ SraAlignments get_sra_alignments(BlastOutput blast_output)
     
     while ( std::getline(mbo_file,line) ) {
         // Remove new lines from the line
-        line.erase( std::remove(line.begin(), line.end(), '\n'), line.end() );
+        remove_new_lines(line);
         // Split into tokens like awk
         std::vector<std::string> tokens = split(line);
         std::string variant_acc = tokens.at(1);
@@ -119,68 +127,26 @@ SraAlignments get_sra_alignments(BlastOutput blast_output)
     return sra_alignments;
 } 
 
-std::vector<CalledVariants> call_variants_in_datasets(const std::vector<BlastOutput> &blast_outputs,
-                                                   const std::map<std::string,VarBoundary> &var_boundary_map)
-/* Determines which variants exist in multiple SRA datasets */
-{
-    std::vector<CalledVariants> called_variants_list;
-    // Call variants in each of the SRA datasets
-    for (int index = 0; index < blast_outputs.size(); index++) {
-        BlastOutput blast_output = blast_outputs.at(index);
-        SraAlignments sra_alignments = get_sra_alignments(blast_output);
-        VariantFrequenciesMap var_freq_map;
-        // Analyze the alignments of the SRA dataset onto the variant flanking sequences
-        for (int alignments_index = 0; alignments_index < sra_alignments.size(); alignments_index++) {
-            Alignment alignment = sra_alignments.get(alignments_index);
-            std::string variant_acc = alignment.variant_acc;
-            VarBoundary var_boundary = var_boundary_map[var_acc];
-            // Make sure the alignment spans the variant first
-            if ( alignment_spans_variant(alignment,var_boundary) ) {
-                // Make sure the variant exists in var_freq_map
-                if ( var_freq_map.variant_frequency_map.find(variant_acc) 
-                     == var_freq_map.variant_frequency_map.end() ) {
-                    var_freq_map.variant_accessions.push_back(variant_acc);
-                    var_freq_map.variant_frequency_map[variant_acc].matches = 0;
-                    var_freq_map.variant_frequency_map[variant_acc].mismatches = 0;
-                }
-                //Determine whether there is a match between the read and the variant flanking sequence at the variant
-                matched = query_contains_ref_bases(alignment,var_boundary);
-                // Update the matches and mismatches counts
-                if (matched) {var_freq_map.variant_frequency_map[variant_acc].matches++;}
-                else {var_freq_map.variant_frequency_map[variant_acc].mismatches++;}
-            }
-        }
-        // From all the variant match and mismatch counts, determine which variants exist in the SRA dataset
-        CalledVariants called_variants = call_variants(var_freq_map);
-        called_variants.accession = accession;
-        called_variants_list.push_back(sra_variants);
-    }
-    return called_variants_list;
-}
-
-void write_tsv(const std::vector< std::vector<CalledVariants> > &called_variants_partitions, std::string output_path)
+void write_tsv(const std::vector<CalledVariants> &called_variants_list, std::string output_path)
 /* Create a TSV file describing which variants exist in each SRA dataset */
 {
     std::ofstream tsv_file (output_path, std::ios::out | std::ios::trunc);
     if (tsv_file.is_open()) {
         tsv_file << "SRA Dataset \t Heterozygous \t Homozygous\n";
-        for (int i = 0; i < called_variants_partitions.size(); i++) {
-            std::vector<CalledVariants> called_variants = called_variants_partitions.at(i);
-            for (int u = 0; u < called_variants.size(); u++) {
-                CalledVariants sra_variants = called_variants.at(u);
-                std::string accession = sra_variants.accession;
-                std::vector<std::string> heterozygous = sra_variants.heterozygous;
-                std::vector<std::string> homozygous = sra_variants.homozygous;
-                tsv_file << accession << " \t ";
-                for (int het_index = 0; het_index < heterozygous.size(); het_index++) {
-                    tsv_file << heterozygous.at(het_index) << " ";
-                }
-                tsv_file << " \t ";
-                for (int hom_index = 0; hom_index < homozygous.size(); hom_index++) {
-                    tsv_file << homozygous.at(hom_index) << " ";
-                } 
-                tsv_file << "\n";
+        for (size_t i = 0; i < called_variants_list.size(); i++) {
+            CalledVariants sra_variants = called_variants_list.at(i);
+            std::string accession = sra_variants.accession;
+            std::vector<std::string> heterozygous = sra_variants.heterozygous;
+            std::vector<std::string> homozygous = sra_variants.homozygous;
+            tsv_file << accession << " \t ";
+            for (size_t het_index = 0; het_index < heterozygous.size(); het_index++) {
+                tsv_file << heterozygous.at(het_index) << " ";
             }
+            tsv_file << " \t ";
+            for (size_t hom_index = 0; hom_index < homozygous.size(); hom_index++) {
+                tsv_file << homozygous.at(hom_index) << " ";
+            } 
+            tsv_file << "\n";
         }
         tsv_file.close();
     } else {
@@ -191,17 +157,19 @@ void write_tsv(const std::vector< std::vector<CalledVariants> > &called_variants
 int main(int argc, char *argv[])
 {
     int opt;
+    std::string help = "Description: Given a list of paths to Magic-BLAST output files and a file containing information concerning variant boundaries, returns a TSV file describing which heterozygous and homozygous variants exist in each dataset.\n"; 
+    std::string usage = "[-h help and usage] [-m MBO list path] [-v var boundary info path] [-o output path]\n";
+    
 
     std::string mbo_list_path = "";
     std::string var_boundary_path = "";
-    int64_t threads = 1;
     std::string output_path = "";
 
-    while ( (opt = getopt(argc, argv, "hm:v:p:o:")) != 1 ) {
+    while ( (opt = getopt(argc, argv, "hm:v:o:")) != 1 ) {
         switch (opt) {
             case 'h':
-                display_help();
-                display_usage();
+                std::cout << help;
+                std::cout << usage;
                 return 0;
             case 'm':
                 mbo_list_path = optarg;
@@ -209,15 +177,12 @@ int main(int argc, char *argv[])
             case 'v':
                 var_boundary_path = optarg;     
                 break;
-            case 'p':
-                threads = std::stoi(optarg);
-                break;
             case 'o':
                 output_path = optarg;
                 break;
             default:
                 std::cerr << "Error: unrecognized option.\n";
-                display_usage();
+                std::cerr << usage;
                 return 1;
         }
     }
@@ -237,28 +202,20 @@ int main(int argc, char *argv[])
         opts_incomplete = true;
     }
     if (opts_incomplete) {
-        display_usage();
+        std::cerr << usage;
         return 1;
     }
 
     std::vector<BlastOutput> mbo_paths_list = get_mbo_paths(mbo_list_path);    
     std::map<std::string,VarBoundary> var_boundary_map = get_var_boundary_map(var_boundary_path);
-    std::vector< std::vector<BlastOutput> > mbo_paths_partitions = partition_mbo_paths(mbo_paths_list,threads);
-    // Process each partition separately in its own thread
-    std::vector< std::future<std::vector<BlastOutput>> > partition_threads;
-    // Only create thread - 1 new threads; work will be done in the main thread, too
-    for (int i = 1; i < mbo_paths_partitions.size(); i++) {
-        partition_threads.push_back( std::async(std::launch::async, call_variants_in_datasets,
-                                                mbo_paths_partitions.at(i), var_boundary_map) ); 
+    std::vector<SraAlignments> sra_alignments_list;
+    // Get the alignments for each SRA dataset
+    for (size_t i = 0; i < mbo_paths_list.size(); i++) {
+        BlastOutput blast_output = mbo_paths_list.at(i);
+        SraAlignments sra_alignments = get_sra_alignments(blast_output); 
+        sra_alignments_list.push_back(sra_alignments);
     }
-    // Container for called variants
-    std::vector< std::vector<CalledVariants> > called_variants_partitions;
-    // Perform work in this thread, too
-    called_variants_partitions.push_back( call_variants_in_datasets(mbo_paths_partitions.at(0),var_boundary_map) );
-    // Retrieve output from all the threads
-    for (int i = 0; i < partition_threads.size(); i++) {
-        called_variants_partitions.push_back( partition_threads.at(i).get() ); 
-    }
-    // Write the TSV file
-    write_tsv(called_variants_partitions,output_path);
+    // Call them variants
+    std::vector<CalledVariants> called_variants_list = call_variants(sra_alignments_list,var_boundary_map); 
+    write_tsv(called_variants_list,output_path);
 }
