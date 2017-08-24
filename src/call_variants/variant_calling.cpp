@@ -7,7 +7,6 @@
 #include "queries_with_ref_bases.hpp"
 
 bool alignment_spans_variant(Alignment alignment, VarBoundary var_boundary)
-/* Determines whether the aligned segment of the variant flanking sequence contains the variant */
 {
     int64_t ref_start = alignment.ref_start;
     int64_t ref_stop = alignment.ref_stop;
@@ -17,7 +16,6 @@ bool alignment_spans_variant(Alignment alignment, VarBoundary var_boundary)
 }
 
 CalledVariants call_variants_in_sra(VariantFrequenciesMap &var_freq_map)
-/* Determine the set of variants that exist in a particular SRA dataset */
 {   // Retrieve the data from the VariantFrequencies object
     std::vector<std::string> accessions = var_freq_map.variant_accessions;
     std::map<std::string,VariantFrequency> map = var_freq_map.map;
@@ -46,7 +44,6 @@ CalledVariants call_variants_in_sra(VariantFrequenciesMap &var_freq_map)
 
 std::vector<CalledVariants> call_variants(const std::vector<SraAlignments> &sra_alignments_list,
                                           std::map<std::string,VarBoundary> &var_boundary_map)
-/* Determines which variants exist in multiple SRA datasets */
 {
     std::vector<CalledVariants> called_variants_list;
     // Call variants in each of the SRA datasets

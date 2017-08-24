@@ -17,7 +17,6 @@ std::vector<std::string> split(const std::string &str)
 }
 
 std::vector< std::vector<BlastOutput> > partition_mbo_paths(std::vector<BlastOutput> &mbo_paths, int64_t n)
-/* Partitions the mbo_paths vector into n partitions of near identical size */
 {
     std::vector<BlastOutput> partition;
     std::vector< std::vector<BlastOutput> > partitions;

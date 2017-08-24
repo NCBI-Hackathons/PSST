@@ -17,6 +17,7 @@
 #include "variant_calling.hpp"
 
 void remove_new_lines(std::string &str)
+/* Removes new line characters from the given string. */
 {
     str.erase( std::remove(str.begin(), str.end(), '\n'), str.end() );
 }
@@ -217,5 +218,6 @@ int main(int argc, char *argv[])
     }
     // Call them variants
     std::vector<CalledVariants> called_variants_list = call_variants(sra_alignments_list,var_boundary_map); 
+    // Write the output file
     write_tsv(called_variants_list,output_path);
 }
