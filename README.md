@@ -12,13 +12,20 @@ The Polygenic SNP Search Tool is an open-source pipeline that **identifies multi
 * Genome-wide Association Studies (GWAS) identified SNPs
 , crossed with database and datasets such as ClinVar, SRA, and GEO, and then constructs a report describing multiple genetic variants associated with diseases.
 
+## Dependencies
+* C++11 compatible `g++` compiler
+* Python 2.7
+* [Biopython](http://biopython.org/)
+
+## Installation
+Run `./install.sh`.
 
 ## Usage:
 
-The main script `psst.sh` accepts as input SRA (accession prefix `SRR`) and SNP (accession prefix `rs`) accessions where, in the files containing the accessions, each line corresponds to a unique accessions.
+The main script `psst` accepts as input SRA (accession prefix `SRR`) and SNP (accession prefix `rs`) accessions where, in the files containing the accessions, each line corresponds to a unique accessions.
 This script will then output a TSV file describing which SNPs are contained in the SRA datasets.
 
-The `psst.sh` subpipeline is as follows:
+The `psst` pipeline is as follows:
 
 1. Extracts flanking sequences for the SNP accessions and creates a FASTA file containing these flanking sequences. 
 
