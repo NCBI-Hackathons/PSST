@@ -6,7 +6,7 @@ if [ "$#" -ne 4 ]; then
 	echo "Description: Given a FASTQ file and a BLAST database, this script runs Magic-BLAST" 
 	echo "             on each SRA dataset."
 	BASENAME=`basename "$0"`
-	echo "Usage: ${BASENAME} [FASTQ file] [BLAST DB name] [output dir] [threads]"
+	echo "Usage: ${BASENAME} [FASTQ file] [BLAST DB name] [output dir] [paths list file] [threads]"
 	exit 0
 fi
 
@@ -14,10 +14,14 @@ fi
 FASTQ=$1
 DB_NAME=$2
 OUTPUT_DIR=$3
-THREADS=$4
+PATHS_FILE=$4
+THREADS=$5
 
 # This prevents ambiguous splicing from occuring in Magic-BLAST
 export MAPPER_NO_OVERLAPPED_HSP_MERGED=1
+
+# The file to hold the path to the MBO file
 BASENAME=`basename "${FASTQ}"`
 OUTPUT_FILE=${OUTPUT_DIR}/${BASENAME/.*/.mbo}
+echo ${OUTPUT_FILE} > ${PATHS_FILE}
 magicblast -query ${FASTQ} -infmt fastq -db ${DB_NAME} -out ${OUTPUT_FILE} -outfmt tabular -parse_deflines T -num_threads ${THREADS}

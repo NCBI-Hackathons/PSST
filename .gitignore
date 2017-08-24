@@ -15,5 +15,5 @@ GRCh38_latest_clinvar_pathogenic_only
 interesting_phenotypes
 *tables.sh
 tables.py
-src/call_variants/call_variants
-src/call_variants/unit_tests/unit_tests
+src/cpp/call_variants
+src/cpp/unit_tests/unit_tests
