@@ -22,8 +22,8 @@ Run `./install.sh`.
 
 ## Usage:
 
-The main script `psst` accepts as input SRA (accession prefix `SRR`) and SNP (accession prefix `rs`) accessions where, in the files containing the accessions, each line corresponds to a unique accessions.
-This script will then output a TSV file describing which SNPs are contained in the SRA datasets.
+The main script `psst` accepts as input a list of SNP accessions and a list of exactly one of: SRA accessions, FASTQ file paths, or FASTA file paths.
+This script will then output a TSV file describing which SNPs are contained in the NGS datasets.
 
 The `psst` pipeline is as follows:
 
@@ -33,7 +33,7 @@ The `psst` pipeline is as follows:
 
 3. Runs Magic-BLAST on each phenotype-associated SRA dataset and the SNP flanking sequence BLAST database.
 
-4. From the Magic-BLAST alignments, determines which SNPs are contained in the SRA datasets using a statistical heuristic.
+4. From the Magic-BLAST alignments, determines which SNPs are contained in the NGS datasets using a statistical heuristic.
 
 See the file `breast-ovarian_cancer.tsv` for an example output file.
 
