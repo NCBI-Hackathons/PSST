@@ -8,35 +8,27 @@ set -e
 # Description and usage messages
 description() {
     printf "PSST version 1.2\n"
-	printf "Description: Given lists of SRA and SNP accessions, determines the set of SNPs that occur in each SRA"
-	printf " dataset.\n"
+	printf "Description: Calls SNPs in multiple NGS datasets.\n"
 }
 
 usage() { 
 	BASENAME=`basename "$0"`
-	printf "Usage: ${BASENAME} [-h description and usage] [-s SRA accessions] [-n SNP accessions] "
-    printf "[-f FASTQ file] [-d working directory]\n"
-    printf "            [-e email for Entrez] [-t threads per Magic-BLAST call] "
+	printf "Usage: ${BASENAME} [-h description and usage] [-i input list file] [-n SNP accessions] "
+    printf "[-d working directory]\n            [-e email for Entrez] [-t threads per Magic-BLAST call] "
     printf "[-p max number of concurrent Magic-BLAST calls]\n"
-    echo "Notes:"
-    echo "'-h' is the only non-mandatory parameter."
-    echo "Exactly one of '-s' or '-f' must be provided as an argument."
-    echo "All other arguments are mandatory."
+    printf "            [-q input file is a list of FASTQ] [-a input file is a list of FASTA]\n"
 }
 
 # Command line arguments
-while getopts ":hs:f:n:d:e:t:p:" opt; do
+while getopts ":hi:n:d:e:t:p:fa" opt; do
     case ${opt} in
         h)
             description 
             usage
             exit 0
             ;;
-        s) # path to the SRA accessions file
-            SRA_ACC=${OPTARG}
-            ;;
-        f) # path to FASTQ file
-            FASTQ=${OPTARG}
+        i) # path to the NGS list file
+            INPUT=${OPTARG}
             ;;
         n) # path to the SNP accessions file
             SNP_ACC=${OPTARG}
@@ -53,20 +45,23 @@ while getopts ":hs:f:n:d:e:t:p:" opt; do
         p) # maximum number of concurrent Magic-BLAST runs
             PROCS=${OPTARG}
             ;;
+        f) # Input file is a list of FASTQ accessions
+            IS_FASTQ=0
+            ;;
+        a) # Input file is a list of FASTA accessions
+            IS_FASTA=0
+            ;;
         \?)
             echo "Invalid option: -${OPTARG}" >&2
+            usage
             exit 1
             ;;
     esac
 done
 
 # Check whether all the necessary command line options have all been inputted and are correct
-if [ -z "${SRA_ACC}" ] && [ -z "${FASTQ}" ]; then
-    echo "Error: please provide either an SRA accessions file or a FASTQ file."
-    OPTS_INCOMPLETE=0
-fi
-if [ ! -z "${SRA_ACC}" ] && [ ! -z "${FASTQ}" ]; then
-    echo "Error: please provide only one of either an SRA accessions file or a FASTQ file."
+if [ -n "${IS_FASTA}" ] && [ -n "${IS_FASTQ}" ]; then
+    echo "Error: input file cannot be both a list of FASTA and FASTQ files."
     OPTS_INCOMPLETE=0
 fi
 if [ -z "${SNP_ACC}" ]; then
@@ -124,18 +119,20 @@ ${SH}/makeblastdb.sh ${SNP_FASTA} ${DIR}
 
 ## Align the SRA datasets onto the variants (a la the BLAST database) using Magic-BLAST
 echo "Aligning SRA datasets onto the SNPs..."
+PATHS_LIST=${DIR}/mbo_pathstxt
 MBO_DIR=${DIR}/mbo # We will store the .mbo files here
 mkdir -p ${MBO_DIR} # Create the directory if it doesn't exist yet
-PATHS_LIST=${DIR}/mbo_paths.txt
-
-# Either run Magic-BLAST on list of SRA accessions or on the single FASTQ file
-if [ -n "${SRA_ACC}" ]; then
-    ${SH}/magicblast_sra.sh ${SRA_ACC} snp_flanks ${MBO_DIR} ${PATHS_LIST} ${THREADS} ${PROCS}
+# Specify the input file type
+if [ -n "${IS_FASTQ}" ]; then
+    INPUT_TYPE="-q"
+elif [ -n "${IS_FASTA}" ]
+    INPUT_TYPE="-a"
 else
-    ${SH}/magicblast_fastq.sh ${FASTQ} snp_flanks ${MBO_DIR} ${PATHS_LIST} ${THREADS}
+    INPUT_TYPE=""
 fi
+${SH}/magicblast -i ${INPUT} -d snp_flanks -o ${MBO_DIR} -p ${PATHS_LIST} -t ${THREADS} -c ${PROCS} ${INPUT_TYPE}
 
-## Call variants in the SRA datasets
+## Call variants in the NGS datasets
 echo "Calling SNPs..."
 TSV=${DIR}/results.tsv
 ${SRC}/cpp/call_variants -m ${MBO_DIR} -v ${SNP_INFO} -o ${TSV}
