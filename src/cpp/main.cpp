@@ -41,12 +41,14 @@ std::vector<BlastOutput> get_mbo_paths(std::string mbo_list_path)
         remove_new_lines(line);
         // Split into tokens
         std::vector<std::string> tokens = split(line); 
-        // The first token is the accession, the second is the MBO path
-        BlastOutput blast_output;
-        blast_output.accession = tokens.at(0);
-        blast_output.path = tokens.at(1); 
-        // Add it to the list
-        blast_output_list.push_back(blast_output); 
+        if (tokens.size() == 2) {
+            // The first token is the accession, the second is the MBO path
+            BlastOutput blast_output;
+            blast_output.accession = tokens.at(0);
+            blast_output.path = tokens.at(1); 
+            // Add it to the list
+            blast_output_list.push_back(blast_output); 
+        }
     }
 
     mbo_list_file.close();
@@ -73,13 +75,15 @@ std::map<std::string,VarBoundary> get_var_boundary_map(std::string var_boundary_
         remove_new_lines(line);
         // Split into tokens
         std::vector<std::string> tokens = split(line);
-        // Put the tokens into the variant info object
-        std::string accession = tokens.at(0);
-        VarBoundary var_boundary;
-        // Convert the strings into integers
-        var_boundary.start = std::stoi( tokens.at(1) );
-        var_boundary.stop = std::stoi( tokens.at(2) ); 
-        var_boundary_map[accession] = var_boundary;
+        if (tokens.size == 3) {
+            // Put the tokens into the variant info object
+            std::string accession = tokens.at(0);
+            VarBoundary var_boundary;
+            // Convert the strings into integers
+            var_boundary.start = std::stoi( tokens.at(1) );
+            var_boundary.stop = std::stoi( tokens.at(2) ); 
+            var_boundary_map[accession] = var_boundary;
+        }
     } 
 
     var_boundary_file.close();
@@ -107,20 +111,22 @@ SraAlignments get_sra_alignments(BlastOutput blast_output)
         remove_new_lines(line);
         // Split into tokens like awk
         std::vector<std::string> tokens = split(line);
-        std::string variant_acc = tokens.at(1);
-        int ref_start = std::stoi( tokens.at(8) );
-        int ref_stop = std::stoi( tokens.at(9) );
-        if (ref_start > ref_stop) {
-            int temp = ref_start;
-            ref_start = ref_stop;
-            ref_stop = temp;
+        if (tokens.size() == 25) {
+            std::string variant_acc = tokens.at(1);
+            int ref_start = std::stoi( tokens.at(8) );
+            int ref_stop = std::stoi( tokens.at(9) );
+            if (ref_start > ref_stop) {
+                int temp = ref_start;
+                ref_start = ref_stop;
+                ref_stop = temp;
+            }
+            std::string btop = tokens.at(16);
+            alignment.variant_acc = variant_acc;
+            alignment.ref_start = ref_start;
+            alignment.ref_stop = ref_stop;
+            alignment.btop = btop;
+            alignments.push_back(alignment); 
         }
-        std::string btop = tokens.at(16);
-        alignment.variant_acc = variant_acc;
-        alignment.ref_start = ref_start;
-        alignment.ref_stop = ref_stop;
-        alignment.btop = btop;
-        alignments.push_back(alignment); 
     } 
     SraAlignments sra_alignments;
     sra_alignments.accession = accession;
