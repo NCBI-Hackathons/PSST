@@ -118,7 +118,7 @@ ${SH}/makeblastdb.sh ${SNP_FASTA} ${DIR}
 
 ## Align the SRA datasets onto the variants (a la the BLAST database) using Magic-BLAST
 echo "Aligning NGS datasets onto the SNPs..."
-PATHS_LIST=${DIR}/mbo_pathstxt
+PATHS_LIST=${DIR}/mbo_paths.txt
 MBO_DIR=${DIR}/mbo # We will store the .mbo files here
 mkdir -p ${MBO_DIR} # Create the directory if it doesn't exist yet
 # Specify the input file type
