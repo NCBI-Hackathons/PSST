@@ -75,7 +75,7 @@ std::map<std::string,VarBoundary> get_var_boundary_map(std::string var_boundary_
         remove_new_lines(line);
         // Split into tokens
         std::vector<std::string> tokens = split(line);
-        if (tokens.size == 3) {
+        if (tokens.size() == 3) {
             // Put the tokens into the variant info object
             std::string accession = tokens.at(0);
             VarBoundary var_boundary;
