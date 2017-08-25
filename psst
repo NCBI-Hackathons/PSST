@@ -103,8 +103,7 @@ SNP_FLANKS=${DIR}/snp_flanks.txt
 ${PY}/get_var_flanks.py -i ${SNP_ACC} -e ${EMAIL} -o ${SNP_FLANKS}
 
 ## Get the variant information, i.e. the start and stop positions of the major allele variant in the flanking sequence
-## and the length of the major allele
-echo "Getting SNP flank information..."
+echo "Getting SNP flank boundaries..."
 SNP_INFO=${DIR}/snp_info.txt
 ${PY}/find_var_info.py -i ${SNP_FLANKS} -o ${SNP_INFO} 
 
