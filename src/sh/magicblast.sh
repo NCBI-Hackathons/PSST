@@ -100,12 +100,14 @@ echo "" > ${PATHS_FILE}
 
 for LINE in $(cat ${INPUT}); do
     # Input is a list of FASTQ files
-    if [ -n ${IS_FASTQ} ]; then
+    if [ -n ${IS_FASTQ} ]
+    then
         FASTQ_BASENAME=`basename "$LINE"`
         OUTPUT_FILE=${OUTPUT_DIR}/${FASTQ_BASENAME}.mbo
         magicblast -query ${LINE} -infmt fastq -db ${DB_NAME} -outfmt tabular -parse_deflines T -num_threads ${THREADS} | awk -F'\t' 'FNR > 3 { if ($2 != "-") {print} }' > ${OUTPUT_FILE} &
     # Input is a list of FASTA files
     elif [ -n ${IS_FASTA} ]
+    then
         FASTA_BASENAME=`basename "$LINE"`
         OUTPUT_FILE=${OUTPUT_DIR}/${FASTA_BASENAME}.mbo
         magicblast -query ${LINE} -infmt FASTA -db ${DB_NAME} -outfmt tabular -parse_deflines T -num_threads ${THREADS} | awk -F'\t' 'FNR > 3 { if ($2 != "-") {print} }' > ${OUTPUT_FILE} &
