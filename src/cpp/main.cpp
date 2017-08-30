@@ -35,7 +35,7 @@ std::vector<BlastOutput> get_mbo_paths(std::string mbo_list_path)
     std::string line;
     std::vector<BlastOutput> blast_output_list;
 
-    // Each line of the file corresponds to an line number
+    // Each line of the file corresponds to a line number
     while ( std::getline(mbo_list_file,line) ) {
         // Remove new lines from the line
         remove_new_lines(line);
@@ -75,7 +75,7 @@ std::map<std::string,VarBoundary> get_var_boundary_map(std::string var_boundary_
         remove_new_lines(line);
         // Split into tokens
         std::vector<std::string> tokens = split(line);
-        if (tokens.size == 3) {
+        if (tokens.size() == 3) {
             // Put the tokens into the variant info object
             std::string accession = tokens.at(0);
             VarBoundary var_boundary;
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
     std::string var_boundary_path = "";
     std::string output_path = "";
 
-    while ( (opt = getopt(argc, argv, "hm:v:o:")) != 1 ) {
+    while ( (opt = getopt(argc, argv, "hm:v:o:")) != -1 ) {
         switch (opt) {
             case 'h':
                 std::cout << help;
@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
                 output_path = optarg;
                 break;
             default:
-                std::cerr << "Error: unrecognized option.\n";
+                std::cerr << "Error: unrecognized option " << opt << std::endl;
                 std::cerr << usage;
                 return 1;
         }
@@ -213,8 +213,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::vector<BlastOutput> mbo_paths_list = get_mbo_paths(mbo_list_path);    
+    std::cout << "Retrieving variant boundary information...\n";
     std::map<std::string,VarBoundary> var_boundary_map = get_var_boundary_map(var_boundary_path);
+    std::cout << "Retrieving Magic-BLAST alignment paths...\n";
+    std::vector<BlastOutput> mbo_paths_list = get_mbo_paths(mbo_list_path);    
+    std::cout << "Retrieving Magic-BLAST alignments...\n";
     std::vector<SraAlignments> sra_alignments_list;
     // Get the alignments for each SRA dataset
     for (size_t i = 0; i < mbo_paths_list.size(); i++) {
@@ -222,8 +225,10 @@ int main(int argc, char *argv[])
         SraAlignments sra_alignments = get_sra_alignments(blast_output); 
         sra_alignments_list.push_back(sra_alignments);
     }
+    std::cout << "Calling variants...\n";
     // Call them variants
     std::vector<CalledVariants> called_variants_list = call_variants(sra_alignments_list,var_boundary_map); 
+    std::cout << "Writing TSV file...\n";
     // Write the output file
     write_tsv(called_variants_list,output_path);
 }
