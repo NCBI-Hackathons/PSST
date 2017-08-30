@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+## Copyright: NCBI 2017
+## Authors: Sean La, Emmanuel Marte
 import getopt
 import sys
 import networkx as nx
