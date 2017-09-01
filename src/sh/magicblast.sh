@@ -110,7 +110,7 @@ for LINE in $(cat ${INPUT}); do
     then
         FASTA_BASENAME=`basename "$LINE"`
         OUTPUT_FILE=${OUTPUT_DIR}/${FASTA_BASENAME}.mbo
-        magicblast -query ${LINE} -infmt FASTA -db ${DB_NAME} -outfmt tabular -parse_deflines T -num_threads ${THREADS} | awk -F'\t' 'FNR > 3 { if ($2 != "-") {print} }' > ${OUTPUT_FILE} &
+        magicblast -query ${LINE} -infmt fasta -db ${DB_NAME} -outfmt tabular -parse_deflines T -num_threads ${THREADS} | awk -F'\t' 'FNR > 3 { if ($2 != "-") {print} }' > ${OUTPUT_FILE} &
     # Input is a list of SRA accessions
     else
         OUTPUT_FILE=${OUTPUT_DIR}/${LINE}.mbo
