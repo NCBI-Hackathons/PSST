@@ -39,13 +39,17 @@ std::vector<BlastOutput> get_mbo_paths(std::string mbo_list_path)
     while ( std::getline(mbo_list_file,line) ) {
         // Remove new lines from the line
         remove_new_lines(line);
-        // Split into tokens
-        std::vector<std::string> tokens = split(line); 
-        if (tokens.size() == 2) {
-            // The first token is the accession, the second is the MBO path
+        if (line.size() > 0) {
             BlastOutput blast_output;
-            blast_output.accession = tokens.at(0);
-            blast_output.path = tokens.at(1); 
+            // Each line corresponds to a unique NGS file path
+            blast_output.path = line;
+            // Get the accession number from the file name
+            size_t dash_index = line.find_last_of("/");
+            size_t dot_index = line.find_last_of(".");
+            size_t accession_len = dot_index - dash_index - 1;
+            std::string accession = line.substr(dash_index+1,accession_len);
+            // The basename sans extension is the accession
+            blast_output.accession = accession;
             // Add it to the list
             blast_output_list.push_back(blast_output); 
         }
