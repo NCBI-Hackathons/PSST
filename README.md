@@ -1,5 +1,10 @@
 # PSST
-Polygenic SNP Search Tool Version 1.1
+Polygenic SNP Search Tool Version 1.2
+
+## What's New
+### Version 1.2
+* PSST now accepts FASTQ and FASTA files
+* Variant callng module now runs faster
 
 ## Graphical Overview
 
