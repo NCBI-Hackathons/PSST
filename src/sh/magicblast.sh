@@ -124,9 +124,7 @@ for LINE in $(cat ${INPUT}); do
     fi
     # Add the path to the current MBO output file to the list
     echo ${OUTPUT_FILE} >> ${PATHS_FILE}
-    # Limit the number of child processes so we don't overload the local computer
-    while [ $(jobs | wc -l) -ge "${MAX_PROCS}" ]; do sleep 1; done
+    while [ $(jobs -r | wc -l) -ge ${MAX_PROCS} ]; do sleep 1; done
 done
-
 # Wait for all processes to finish before exiting
 wait
