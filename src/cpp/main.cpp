@@ -78,7 +78,7 @@ std::map<std::string,VarBoundary> get_var_boundary_map(std::string var_boundary_
         // Remove new lines from the line
         remove_new_lines(line);
         // Split into tokens
-        std::vector<std::string> tokens = split(line);
+        std::vector<std::string> tokens = split(line,'\t');
         if (tokens.size() == 3) {
             // Put the tokens into the variant info object
             std::string accession = tokens.at(0);
@@ -114,7 +114,7 @@ SraAlignments get_sra_alignments(BlastOutput blast_output)
         // Remove new lines from the line
         remove_new_lines(line);
         // Split into tokens like awk
-        std::vector<std::string> tokens = split(line);
+        std::vector<std::string> tokens = split(line,'\t');
         if (tokens.size() == 25) {
             std::string variant_acc = tokens.at(1);
             int ref_start = std::stoi( tokens.at(8) );

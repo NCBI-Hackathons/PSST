@@ -3,7 +3,7 @@
 
 #include "structs.hpp"
 
-std::vector<std::string> split(const std::string &str);
+std::vector<std::string> split(const std::string &str, char delim);
 /* Returns a vector of the words in str where ' ' is the separator */
 
 std::vector< std::vector<BlastOutput> > partition_mbo_paths(const std::vector<BlastOutput> &mbo_paths, int64_t n);

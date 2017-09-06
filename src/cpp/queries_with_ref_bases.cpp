@@ -45,7 +45,7 @@ std::vector<std::string> get_btop_list(std::string btop)
         }
         temp_btop = temp_btop + current_char;
     }
-    std::vector<std::string> btop_list = split(temp_btop);
+    std::vector<std::string> btop_list = split(temp_btop,' ');
     return btop_list;
 }
 
