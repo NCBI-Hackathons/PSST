@@ -39,3 +39,6 @@ Grouping different disease types through the ClinVar database in various categor
 2. Performed an online search to crosscheck whether the diseases that came up were metabolic or cancer related. 
 
 3. Those that were not a match were eliminated while the correct diseases were moved into another file. 
+
+## Future Additions
+* Add a Bayesian inference variant calling rule for small number of NGS datasets. Our current heuristic runs fast on a large number of datasets, but for small number of datasets, a bayesian inference rule would be better and we wouldn't lose much in terms of time usage.
