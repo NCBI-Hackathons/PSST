@@ -8,6 +8,9 @@ def get_var_flanking_sequences(accessions,email):
     Entrez.email = email
     for var_id in accessions:
         var_id = var_id.rstrip()
+        if var_id.startswith('rs'):
+            var_id = var_id[len('rs'):] 
+        var_id = var_id.rstrip()
         if len(var_id) > 0:
             handle = Entrez.esummary(db='snp',id=var_id,retmode='xml') 
             records = Entrez.parse(handle)
