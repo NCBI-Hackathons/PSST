@@ -7,14 +7,16 @@ def get_var_flanking_sequences(accessions,email):
     flanking_sequences = {}
     Entrez.email = email
     for var_id in accessions:
-        handle = Entrez.esummary(db='snp',id=var_id,retmode='xml') 
-        records = Entrez.parse(handle)
-        for record in records:
-            docsum = record['DOCSUM']
-            docsum_tokens = docsum.split('|')
-            flanking_seq = [token for token in docsum_tokens if 'SEQ=' in token][0].split('=')[1]
-            flanking_sequences[var_id] = flanking_seq
-        handle.close()
+        var_id = var_id.rstrip()
+        if len(var_id) > 0:
+            handle = Entrez.esummary(db='snp',id=var_id,retmode='xml') 
+            records = Entrez.parse(handle)
+            for record in records:
+                docsum = record['DOCSUM']
+                docsum_tokens = docsum.split('|')
+                flanking_seq = [token for token in docsum_tokens if 'SEQ=' in token][0].split('=')[1]
+                flanking_sequences[var_id] = flanking_seq
+            handle.close()
     return flanking_sequences
 
 def write_flanking_sequences(flanking_sequences,output_path):
