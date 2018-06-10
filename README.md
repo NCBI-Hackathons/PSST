@@ -12,6 +12,9 @@ The Polygenic SNP Search Tool is an open-source pipeline that **identifies multi
 * Genome-wide Association Studies (GWAS) identified SNPs
 , crossed with database and datasets such as ClinVar, SRA, and GEO, and then constructs a report describing multiple genetic variants associated with diseases.
 
+## Dependencies:
+
+Biopython
 
 ## Usage:
 
